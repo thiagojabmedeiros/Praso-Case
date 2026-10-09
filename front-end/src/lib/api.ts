@@ -6,6 +6,7 @@ import {
   Seller,
   EstablishmentStatus,
   VisitResult,
+  Recomendacao,
 } from './types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
@@ -104,4 +105,10 @@ export const sellersAPI = {
       method: 'PATCH',
       body: JSON.stringify({ pontos }),
     }),
+};
+
+// Recomendações
+export const recommendationsAPI = {
+  getByVendedor: (vendedorId: string) =>
+    apiCall<Recomendacao[]>(`/recommendations/vendor/${vendedorId}`),
 };

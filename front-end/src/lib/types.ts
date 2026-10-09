@@ -70,3 +70,9 @@ export interface Seller {
   pontuacaoAcumulada: number;
   createdAt: string;
 }
+
+export interface Recomendacao {
+  establishment: Establishment;
+  score: number;
+  motivos: string[];
+}

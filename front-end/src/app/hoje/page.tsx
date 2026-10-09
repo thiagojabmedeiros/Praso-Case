@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Establishment } from '@/lib/types';
-import { establishmentsAPI } from '@/lib/api';
+import { Recomendacao } from '@/lib/types';
+import { recommendationsAPI } from '@/lib/api';
 
 const statusLabel = {
   lead: '🔴 Lead',
@@ -19,18 +19,19 @@ const statusColor = {
   churn: 'bg-gray-100 text-gray-800',
 };
 
+// Vendedor fixo do protótipo (sem autenticação).
+const VENDEDOR_ID = 'seller-1';
+
 export default function HojePage() {
-  const [establishments, setEstablishments] = useState<Establishment[]>([]);
+  const [recomendacoes, setRecomendacoes] = useState<Recomendacao[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
       try {
-        const data = await establishmentsAPI.getAll({
-          status: 'lead',
-        });
-        setEstablishments(data);
+        const data = await recommendationsAPI.getByVendedor(VENDEDOR_ID);
+        setRecomendacoes(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Erro ao carregar estabelecimentos');
       } finally {
@@ -74,12 +75,12 @@ export default function HojePage() {
 
       {/* Content */}
       <div className="max-w-2xl mx-auto p-4 space-y-4">
-        {establishments.length === 0 ? (
+        {recomendacoes.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-slate-600">Nenhum estabelecimento encontrado</p>
           </div>
         ) : (
-          establishments.map((est) => (
+          recomendacoes.map(({ establishment: est, score, motivos }) => (
             <Link key={est.id} href={`/visita/${est.id}`}>
               <div className="bg-white rounded-lg shadow hover:shadow-md transition p-4 cursor-pointer">
                 <div className="flex items-start justify-between gap-3">
@@ -87,28 +88,47 @@ export default function HojePage() {
                     <h2 className="font-semibold text-lg text-slate-900 truncate">
                       {est.nomeFantasia}
                     </h2>
-                    <p className="text-sm text-slate-600">{est.razaoSocial}</p>
+                    {est.razaoSocial && (
+                      <p className="text-sm text-slate-600">{est.razaoSocial}</p>
+                    )}
                     <p className="text-xs text-slate-500 mt-1">
                       📍 {est.bairro} • {est.segmento}
                     </p>
                   </div>
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ${statusColor[est.status]}`}
-                  >
-                    {statusLabel[est.status]}
-                  </span>
+                  <div className="flex flex-col items-end gap-1">
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ${statusColor[est.status]}`}
+                    >
+                      {statusLabel[est.status]}
+                    </span>
+                    <span className="text-xs text-slate-500">Pontuação {score.toFixed(2)}</span>
+                  </div>
                 </div>
+
+                {/* Motivos da recomendação */}
+                {motivos.length > 0 && (
+                  <ul className="mt-3 flex flex-wrap gap-1">
+                    {motivos.map((motivo) => (
+                      <li
+                        key={motivo}
+                        className="text-xs bg-blue-50 text-blue-800 px-2 py-0.5 rounded"
+                      >
+                        {motivo}
+                      </li>
+                    ))}
+                  </ul>
+                )}
 
                 {/* Quick info */}
                 <div className="mt-3 pt-3 border-t border-slate-200 grid grid-cols-2 gap-2 text-xs">
                   <div>
                     <span className="text-slate-500">Melhor horário:</span>
-                    <p className="font-medium text-slate-900">{est.melhorHorario}</p>
+                    <p className="font-medium text-slate-900">{est.melhorHorario ?? '—'}</p>
                   </div>
                   <div>
                     <span className="text-slate-500">Potencial:</span>
                     <p className="font-medium text-slate-900">
-                      {est.potencial === 'alto' ? '⭐ Alto' : 'Normal'}
+                      {est.potencial === 'alto' ? '⭐ Alto' : est.potencial === 'baixo' ? 'Baixo' : 'Normal'}
                     </p>
                   </div>
                 </div>
@@ -116,7 +136,7 @@ export default function HojePage() {
                 {/* Fornecedor */}
                 <div className="mt-2 text-xs">
                   <span className="text-slate-500">Fornecedor atual:</span>
-                  <p className="text-slate-700">{est.fornecedorAtual}</p>
+                  <p className="text-slate-700">{est.fornecedorAtual ?? '—'}</p>
                 </div>
 
                 {/* CTA */}
