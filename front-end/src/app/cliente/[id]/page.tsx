@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import { Establishment, Visit, Purchase } from '@/lib/types';
 import { establishmentsAPI, visitsAPI, purchasesAPI } from '@/lib/api';
 
-export default function ClientePage({ params }: { params: { id: string } }) {
+export default function ClientePage() {
+  const params = useParams<{ id: string }>();
   const [establishment, setEstablishment] = useState<Establishment | null>(null);
   const [visits, setVisits] = useState<Visit[]>([]);
   const [purchases, setPurchases] = useState<Purchase[]>([]);

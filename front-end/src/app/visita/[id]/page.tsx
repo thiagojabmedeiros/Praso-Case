@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Establishment, Visit, VisitResult } from '@/lib/types';
 import { establishmentsAPI, visitsAPI } from '@/lib/api';
@@ -15,7 +15,8 @@ const visitResults: { value: VisitResult; label: string; emoji: string }[] = [
   { value: 'em-acompanhamento', label: 'Acompanhamento', emoji: '📞' },
 ];
 
-export default function VisitaPage({ params }: { params: { id: string } }) {
+export default function VisitaPage() {
+  const params = useParams<{ id: string }>();
   const router = useRouter();
   const [establishment, setEstablishment] = useState<Establishment | null>(null);
   const [loading, setLoading] = useState(true);
