@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Param, Body, Query } from '@nestjs/common';
 import { VisitsService } from './visits.service';
-import { Visit } from '../types';
+import type { Visit } from '../types';
 
 @Controller('visits')
 export class VisitsController {

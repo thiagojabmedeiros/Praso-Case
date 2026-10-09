@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Param, Body } from '@nestjs/common';
 import { PurchasesService } from './purchases.service';
-import { Purchase } from '../types';
+import type { Purchase } from '../types';
 
 @Controller('purchases')
 export class PurchasesController {
