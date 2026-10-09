@@ -1,7 +1,7 @@
 export type EstablishmentStatus = 'lead' | 'oportunidade' | 'cliente' | 'churn';
 export type EstablishmentSegment = 'restaurante' | 'padaria' | 'lanchonete' | 'pizzaria' | 'hamburgueria' | 'cafeteria' | 'bar';
 export type DocumentType = 'MEI' | 'nao-MEI';
-export type Potential = 'alto' | 'normal';
+export type Potential = 'alto' | 'normal' | 'baixo';
 export type VisitType = 'planejada' | 'efetiva';
 export type VisitResult = 'cadastrou' | 'recusou' | 'fechado' | 'ausente' | 'compra' | 'em-acompanhamento';
 
