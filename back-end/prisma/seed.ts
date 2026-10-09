@@ -141,6 +141,18 @@ const establishments = [
   },
 ];
 
+// Compras de exemplo para a carteira de recorrência (valores fictícios, teste).
+// Três estados: Beto's vencida (janela de 45 dias já passou), Du Maranhão crítica (faltam 7 dias
+// ou menos), Costa normal (acabou de fazer a 1ª compra).
+const purchases = [
+  { id: 'pur-betos-1', establishmentId: 'est-betos-bar', vendedorId: 'seller-1', data: '2026-08-20', valor: 250, autonoma: false },
+  { id: 'pur-betos-2', establishmentId: 'est-betos-bar', vendedorId: 'seller-1', data: '2026-09-02', valor: 260, autonoma: true },
+  { id: 'pur-maranhao-1', establishmentId: 'est-du-maranhao', vendedorId: 'seller-1', data: '2026-09-01', valor: 300, autonoma: false },
+  { id: 'pur-maranhao-2', establishmentId: 'est-du-maranhao', vendedorId: 'seller-1', data: '2026-09-10', valor: 310, autonoma: true },
+  { id: 'pur-maranhao-3', establishmentId: 'est-du-maranhao', vendedorId: 'seller-1', data: '2026-09-20', valor: 320, autonoma: true },
+  { id: 'pur-costa-1', establishmentId: 'est-costa-pizzaria', vendedorId: 'seller-1', data: '2026-09-25', valor: 180, autonoma: false },
+];
+
 async function main() {
   for (const s of sellers) {
     await prisma.seller.upsert({ where: { id: s.id }, update: s, create: s });
@@ -151,6 +163,10 @@ async function main() {
       update: e,
       create: { ...e, status: 'lead', score: 0, vendedorId: 'seller-1' },
     });
+  }
+  for (const p of purchases) {
+    const data = { ...p, data: new Date(p.data) };
+    await prisma.purchase.upsert({ where: { id: p.id }, update: data, create: data });
   }
   const count = await prisma.establishment.count();
   console.log(`Seed ok: ${sellers.length} vendedores, ${count} estabelecimentos.`);
