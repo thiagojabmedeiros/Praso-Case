@@ -6,10 +6,11 @@ import { VisitsModule } from './visits/visits.module';
 import { PurchasesModule } from './purchases/purchases.module';
 import { FollowUpsModule } from './followups/followups.module';
 import { SellersModule } from './sellers/sellers.module';
+import { RecommendationsModule } from './recommendations/recommendations.module';
 import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
-  imports: [PrismaModule, EstablishmentsModule, VisitsModule, PurchasesModule, FollowUpsModule, SellersModule],
+  imports: [PrismaModule, EstablishmentsModule, VisitsModule, PurchasesModule, FollowUpsModule, SellersModule, RecommendationsModule],
   controllers: [AppController],
   providers: [AppService],
 })

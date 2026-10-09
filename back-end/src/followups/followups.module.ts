@@ -8,5 +8,6 @@ import { PurchasesModule } from '../purchases/purchases.module';
   imports: [EstablishmentsModule, PurchasesModule],
   controllers: [FollowUpsController],
   providers: [FollowUpsService],
+  exports: [FollowUpsService],
 })
 export class FollowUpsModule {}
