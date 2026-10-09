@@ -23,7 +23,6 @@ export default function VisitaPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedResult, setSelectedResult] = useState<VisitResult | null>(null);
   const [note, setNote] = useState('');
-  const [geo, setGeo] = useState<{ lat: number; lng: number; accuracy: number } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [useVoice, setUseVoice] = useState(false);
   const [listeningVoice, setListeningVoice] = useState(false);
@@ -41,26 +40,6 @@ export default function VisitaPage() {
     }
     load();
   }, [params.id]);
-
-  const captureGeo = () => {
-    if (!navigator.geolocation) {
-      setError('Geolocalização não disponível');
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setGeo({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-          accuracy: position.coords.accuracy,
-        });
-      },
-      (err) => {
-        setError(`Erro de localização: ${err.message}`);
-      },
-    );
-  };
 
   const startVoiceNote = () => {
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
@@ -105,7 +84,6 @@ export default function VisitaPage() {
         dataHora: new Date().toISOString(),
         tipo: 'efetiva',
         resultado: selectedResult,
-        geo: geo || undefined,
         nota: note,
         createdAt: new Date().toISOString(),
       };
@@ -182,17 +160,6 @@ export default function VisitaPage() {
               </p>
             )}
           </div>
-        </div>
-
-        {/* Captura de localização */}
-        <div className="bg-white border border-slate-200 rounded-lg p-4">
-          <h2 className="font-semibold text-slate-900 mb-3">📍 Localização</h2>
-          <button
-            onClick={captureGeo}
-            className="w-full bg-slate-100 hover:bg-slate-200 text-slate-800 py-2 rounded transition text-sm"
-          >
-            {geo ? `✅ Localização capturada (acurácia: ${Math.round(geo.accuracy)}m)` : '📍 Capturar localização'}
-          </button>
         </div>
 
         {/* Resultado da visita */}
