@@ -1,0 +1,107 @@
+import {
+  Establishment,
+  Visit,
+  Purchase,
+  FollowUp,
+  Seller,
+  EstablishmentStatus,
+  VisitResult,
+} from './types';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+
+async function apiCall<T>(
+  endpoint: string,
+  options: RequestInit = {},
+): Promise<T> {
+  const url = `${API_URL}${endpoint}`;
+  const response = await fetch(url, {
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+    ...options,
+  });
+
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status} ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+// Establishments
+export const establishmentsAPI = {
+  getAll: (filters?: { status?: EstablishmentStatus; bairro?: string }) => {
+    const params = new URLSearchParams();
+    if (filters?.status) params.append('status', filters.status);
+    if (filters?.bairro) params.append('bairro', filters.bairro);
+    const query = params.toString() ? `?${params.toString()}` : '';
+    return apiCall<Establishment[]>(`/establishments${query}`);
+  },
+
+  getById: (id: string) => apiCall<Establishment>(`/establishments/${id}`),
+
+  create: (data: Omit<Establishment, 'id' | 'createdAt' | 'updatedAt'>) =>
+    apiCall<Establishment>('/establishments', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  updateStatus: (id: string, status: EstablishmentStatus) =>
+    apiCall<Establishment>(`/establishments/${id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
+    }),
+};
+
+// Visits
+export const visitsAPI = {
+  getAll: () => apiCall<Visit[]>('/visits'),
+
+  getByEstablishment: (establishmentId: string) =>
+    apiCall<Visit[]>(`/visits/establishment/${establishmentId}`),
+
+  create: (data: Omit<Visit, 'id' | 'createdAt'>) =>
+    apiCall<Visit>('/visits', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+};
+
+// Purchases
+export const purchasesAPI = {
+  getByEstablishment: (establishmentId: string) =>
+    apiCall<Purchase[]>(`/purchases/establishment/${establishmentId}`),
+
+  getAutonomous: (establishmentId: string) =>
+    apiCall<Purchase[]>(`/purchases/establishment/${establishmentId}/autonomous`),
+
+  create: (data: Omit<Purchase, 'id' | 'createdAt'>) =>
+    apiCall<Purchase>('/purchases', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+};
+
+// FollowUps
+export const followupsAPI = {
+  getByVendedor: (vendedorId: string) =>
+    apiCall<FollowUp[]>(`/followups/vendor/${vendedorId}`),
+
+  getByEstablishment: (establishmentId: string) =>
+    apiCall<FollowUp | undefined>(`/followups/establishment/${establishmentId}`),
+};
+
+// Sellers
+export const sellersAPI = {
+  getAll: () => apiCall<Seller[]>('/sellers'),
+
+  getById: (id: string) => apiCall<Seller>(`/sellers/${id}`),
+
+  updateScore: (id: string, pontos: number) =>
+    apiCall<Seller>(`/sellers/${id}/score`, {
+      method: 'PATCH',
+      body: JSON.stringify({ pontos }),
+    }),
+};
