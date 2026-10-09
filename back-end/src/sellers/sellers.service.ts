@@ -1,49 +1,31 @@
 import { Injectable } from '@nestjs/common';
 import { Seller } from '../types';
+import { PrismaService } from '../prisma/prisma.service';
+import { toSeller } from '../prisma/mappers';
 
 @Injectable()
 export class SellersService {
-  private sellers: Map<string, Seller> = new Map();
+  constructor(private prisma: PrismaService) {}
 
-  constructor() {
-    this.seedData();
+  async findById(id: string): Promise<Seller | undefined> {
+    const row = await this.prisma.seller.findUnique({ where: { id } });
+    return row ? toSeller(row) : undefined;
   }
 
-  private seedData() {
-    const seeds: Seller[] = [
-      {
-        id: 'seller-1',
-        nome: 'João da Silva',
-        pontuacaoAcumulada: 1.5,
-        createdAt: new Date('2026-08-01'),
-      },
-      {
-        id: 'seller-2',
-        nome: 'Maria dos Santos',
-        pontuacaoAcumulada: 0.5,
-        createdAt: new Date('2026-08-15'),
-      },
-    ];
-
-    seeds.forEach((s) => {
-      this.sellers.set(s.id, s);
+  async findAll(): Promise<Seller[]> {
+    const rows = await this.prisma.seller.findMany({
+      orderBy: { pontuacaoAcumulada: 'desc' },
     });
+    return rows.map(toSeller);
   }
 
-  findById(id: string): Seller | undefined {
-    return this.sellers.get(id);
-  }
-
-  findAll(): Seller[] {
-    return Array.from(this.sellers.values()).sort(
-      (a, b) => b.pontuacaoAcumulada - a.pontuacaoAcumulada,
-    );
-  }
-
-  updateScore(id: string, pontos: number): Seller | undefined {
-    const seller = this.sellers.get(id);
-    if (!seller) return undefined;
-    seller.pontuacaoAcumulada += pontos;
-    return seller;
+  async updateScore(id: string, pontos: number): Promise<Seller | undefined> {
+    const exists = await this.prisma.seller.findUnique({ where: { id }, select: { id: true } });
+    if (!exists) return undefined;
+    const row = await this.prisma.seller.update({
+      where: { id },
+      data: { pontuacaoAcumulada: { increment: pontos } },
+    });
+    return toSeller(row);
   }
 }

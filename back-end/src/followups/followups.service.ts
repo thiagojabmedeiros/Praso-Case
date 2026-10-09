@@ -1,117 +1,114 @@
 import { Injectable } from '@nestjs/common';
-import { FollowUp } from '../types';
-import { EstablishmentsService } from '../establishments/establishments.service';
-import { PurchasesService } from '../purchases/purchases.service';
+import { FollowUp, Purchase } from '../types';
+import { PrismaService } from '../prisma/prisma.service';
+import { toPurchase } from '../prisma/mappers';
+
+const JANELA_DIAS = 45;
+const COMPRAS_PARA_RECORRENCIA = 3;
+
+/**
+ * Calcula o acompanhamento de um estabelecimento a partir das suas compras.
+ * `purchases` deve vir ordenado por data, da mais recente para a mais antiga.
+ * Retorna undefined se não houve compra ou se o cliente já atingiu a recorrência.
+ */
+function buildFollowUp(
+  establishmentId: string,
+  vendedorId: string,
+  purchases: Purchase[],
+  agora: Date,
+): FollowUp | undefined {
+  if (purchases.length === 0) return undefined;
+
+  const autonomas = purchases.filter((p) => p.autonoma).length;
+  if (autonomas >= COMPRAS_PARA_RECORRENCIA) return undefined;
+
+  const primeiraCompra = purchases[purchases.length - 1];
+  const proximoDeadline = new Date(primeiraCompra.data);
+  proximoDeadline.setDate(proximoDeadline.getDate() + JANELA_DIAS);
+
+  const diasRestantes = Math.ceil(
+    (proximoDeadline.getTime() - agora.getTime()) / (1000 * 60 * 60 * 24),
+  );
+
+  let urgencia: FollowUp['urgencia'];
+  if (diasRestantes < 0) {
+    urgencia = 'vencida';
+  } else if (diasRestantes <= 7) {
+    urgencia = 'critica';
+  } else {
+    urgencia = 'normal';
+  }
+
+  return {
+    establishmentId,
+    vendedorId,
+    primeiraCompraData: primeiraCompra.data,
+    ultimaCompraData: purchases[0].data,
+    proximoDeadline,
+    comprasAte: autonomas,
+    faltam: COMPRAS_PARA_RECORRENCIA - autonomas,
+    diasRestantes,
+    urgencia,
+  };
+}
 
 @Injectable()
 export class FollowUpsService {
-  constructor(
-    private establishmentsService: EstablishmentsService,
-    private purchasesService: PurchasesService,
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
   /**
-   * Encontra clientes que fizeram a 1ª compra mas não atingiram recorrência (3ª compra).
-   * Retorna ordenado por urgência (dias restantes para atingir 45 dias).
+   * Clientes do vendedor que fizeram a 1ª compra mas ainda não atingiram a recorrência (3ª compra autônoma).
+   * Ordenado por urgência e depois por dias restantes.
    */
-  findByVendedor(vendedorId: string): FollowUp[] {
-    const ests = this.establishmentsService.findAll({ vendedorId });
-    const followups: FollowUp[] = [];
-
-    ests.forEach((est) => {
-      const purchases = this.purchasesService.findByEstablishmentId(est.id);
-      const autonomousPurchases = purchases.filter((p) => p.autonoma);
-
-      if (purchases.length === 0) {
-        return; // Sem compras, pula
-      }
-
-      const primeiraCompra = purchases[purchases.length - 1]; // Última é a primeira cronologicamente
-      const proximoDeadline = new Date(primeiraCompra.data);
-      proximoDeadline.setDate(proximoDeadline.getDate() + 45);
-
-      const agora = new Date();
-      const diasRestantes = Math.ceil(
-        (proximoDeadline.getTime() - agora.getTime()) / (1000 * 60 * 60 * 24),
-      );
-
-      let urgencia: 'vencida' | 'critica' | 'normal';
-      if (diasRestantes < 0) {
-        urgencia = 'vencida';
-      } else if (diasRestantes <= 7) {
-        urgencia = 'critica';
-      } else {
-        urgencia = 'normal';
-      }
-
-      const followup: FollowUp = {
-        establishmentId: est.id,
-        vendedorId,
-        primeiraCompraData: primeiraCompra.data,
-        ultimaCompraData: purchases[0].data,
-        proximoDeadline,
-        comprasAte: autonomousPurchases.length,
-        faltam: Math.max(0, 3 - autonomousPurchases.length),
-        diasRestantes,
-        urgencia,
-      };
-
-      if (followup.faltam > 0) {
-        followups.push(followup);
-      }
+  async findByVendedor(vendedorId: string): Promise<FollowUp[]> {
+    const establishments = await this.prisma.establishment.findMany({
+      where: { vendedorId },
+      select: { id: true, vendedorId: true },
     });
+    const ids = establishments.map((e) => e.id);
 
-    // Ordena por urgência (vencida > crítica > normal) e depois por dias restantes
+    const purchaseRows = await this.prisma.purchase.findMany({
+      where: { establishmentId: { in: ids } },
+      orderBy: { data: 'desc' },
+    });
+    const porEstabelecimento = new Map<string, Purchase[]>();
+    for (const row of purchaseRows.map(toPurchase)) {
+      const lista = porEstabelecimento.get(row.establishmentId) ?? [];
+      lista.push(row);
+      porEstabelecimento.set(row.establishmentId, lista);
+    }
+
+    const agora = new Date();
+    const followups = establishments
+      .map((est) => buildFollowUp(est.id, vendedorId, porEstabelecimento.get(est.id) ?? [], agora))
+      .filter((f): f is FollowUp => f !== undefined);
+
+    const ordemUrgencia = { vencida: 0, critica: 1, normal: 2 };
     return followups.sort((a, b) => {
-      const urgenciaOrder = { vencida: 0, critica: 1, normal: 2 };
-      if (urgenciaOrder[a.urgencia] !== urgenciaOrder[b.urgencia]) {
-        return urgenciaOrder[a.urgencia] - urgenciaOrder[b.urgencia];
+      if (ordemUrgencia[a.urgencia] !== ordemUrgencia[b.urgencia]) {
+        return ordemUrgencia[a.urgencia] - ordemUrgencia[b.urgencia];
       }
       return a.diasRestantes - b.diasRestantes;
     });
   }
 
   /**
-   * Retorna um followup específico
+   * Acompanhamento de um estabelecimento específico.
    */
-  findByEstablishment(establishmentId: string): FollowUp | undefined {
-    const est = this.establishmentsService.findById(establishmentId);
+  async findByEstablishment(establishmentId: string): Promise<FollowUp | undefined> {
+    const est = await this.prisma.establishment.findUnique({
+      where: { id: establishmentId },
+      select: { id: true, vendedorId: true },
+    });
     if (!est) return undefined;
 
-    const purchases = this.purchasesService.findByEstablishmentId(establishmentId);
-    if (purchases.length === 0) return undefined;
+    const purchaseRows = await this.prisma.purchase.findMany({
+      where: { establishmentId },
+      orderBy: { data: 'desc' },
+    });
+    const purchases = purchaseRows.map(toPurchase);
+    const vendedorId = est.vendedorId ?? purchases[0]?.vendedorId ?? '';
 
-    const autonomousPurchases = purchases.filter((p) => p.autonoma);
-    if (autonomousPurchases.length >= 3) return undefined; // Já atingiu recorrência
-
-    const primeiraCompra = purchases[purchases.length - 1];
-    const proximoDeadline = new Date(primeiraCompra.data);
-    proximoDeadline.setDate(proximoDeadline.getDate() + 45);
-
-    const agora = new Date();
-    const diasRestantes = Math.ceil(
-      (proximoDeadline.getTime() - agora.getTime()) / (1000 * 60 * 60 * 24),
-    );
-
-    let urgencia: 'vencida' | 'critica' | 'normal';
-    if (diasRestantes < 0) {
-      urgencia = 'vencida';
-    } else if (diasRestantes <= 7) {
-      urgencia = 'critica';
-    } else {
-      urgencia = 'normal';
-    }
-
-    return {
-      establishmentId,
-      vendedorId: est.id, // Hack: não temos info de qual vendedor, retorna est.id
-      primeiraCompraData: primeiraCompra.data,
-      ultimaCompraData: purchases[0].data,
-      proximoDeadline,
-      comprasAte: autonomousPurchases.length,
-      faltam: Math.max(0, 3 - autonomousPurchases.length),
-      diasRestantes,
-      urgencia,
-    };
+    return buildFollowUp(establishmentId, vendedorId, purchases, new Date());
   }
 }

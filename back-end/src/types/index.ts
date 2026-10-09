@@ -1,7 +1,7 @@
 export type EstablishmentStatus = 'lead' | 'oportunidade' | 'cliente' | 'churn';
 export type EstablishmentSegment = 'restaurante' | 'padaria' | 'lanchonete' | 'pizzaria' | 'hamburgueria' | 'cafeteria' | 'bar';
 export type DocumentType = 'MEI' | 'nao-MEI';
-export type Potential = 'alto' | 'normal';
+export type Potential = 'alto' | 'normal' | 'baixo';
 export type VisitType = 'planejada' | 'efetiva';
 export type VisitResult = 'cadastrou' | 'recusou' | 'fechado' | 'ausente' | 'compra' | 'em-acompanhamento';
 
@@ -11,21 +11,24 @@ export interface Geo {
   accuracy?: number;
 }
 
+// Campos nulos são dados ainda não levantados (ver prisma/seed.ts).
 export interface Establishment {
   id: string;
-  razaoSocial: string;
+  razaoSocial: string | null;
   nomeFantasia: string;
-  cnpj: string;
+  cnpj: string | null;
   segmento: EstablishmentSegment;
-  tipoDoc: DocumentType;
+  tipoDoc: DocumentType | null;
   potencial: Potential;
   status: EstablishmentStatus;
   endereco: string;
+  telefone: string | null;
   bairro: string;
-  fornecedorAtual: string;
-  melhorHorario: string; // ex: "14:00"
+  fornecedorAtual: string | null;
+  melhorHorario: string | null; // ex: "14:00"
   notasContexto: string;
   score: number;
+  vendedorId: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -40,7 +43,6 @@ export interface Visit {
   geo?: Geo;
   nota: string;
   createdAt: Date;
-  updatedAt?: never; // imutável
 }
 
 export interface Purchase {
