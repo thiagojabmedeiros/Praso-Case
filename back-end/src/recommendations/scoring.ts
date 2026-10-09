@@ -2,11 +2,36 @@ import { FollowUp, Potential } from '../types';
 
 // Pesos da pontuação (soma = 1). Primeira aposta; ajustar com os dados de campo.
 export const PESOS = {
-  urgencia: 0.35,
-  potencial: 0.25,
+  urgencia: 0.3,
+  potencial: 0.2,
   horario: 0.2,
-  recencia: 0.2,
+  recencia: 0.15,
+  distancia: 0.15,
 } as const;
+
+// Distância em linha reta: 0,5 km ou menos vale 1; 8 km ou mais vale 0.
+const DISTANCIA_CHEIA_KM = 0.5;
+const DISTANCIA_ZERO_KM = 8;
+const RAIO_TERRA_KM = 6371;
+
+/** Distância em linha reta entre dois pontos (fórmula de haversine), em km. */
+export function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }): number {
+  const rad = (graus: number) => (graus * Math.PI) / 180;
+  const dLat = rad(b.lat - a.lat);
+  const dLng = rad(b.lng - a.lng);
+  const h =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * RAIO_TERRA_KM * Math.asin(Math.sqrt(h));
+}
+
+/** 0,5 quando não há coordenadas (neutro). */
+export function componenteDistancia(distanciaKm: number | null): number {
+  if (distanciaKm === null) return 0.5;
+  if (distanciaKm <= DISTANCIA_CHEIA_KM) return 1;
+  if (distanciaKm >= DISTANCIA_ZERO_KM) return 0;
+  return 1 - (distanciaKm - DISTANCIA_CHEIA_KM) / (DISTANCIA_ZERO_KM - DISTANCIA_CHEIA_KM);
+}
 
 const URGENCIA: Record<FollowUp['urgencia'], number> = {
   vencida: 1,
@@ -36,6 +61,7 @@ export interface ScoreInput {
   urgencia: FollowUp['urgencia'] | null; // null: fora da carteira de recorrência
   diasRestantes: number | null;
   diasDesdeUltimaVisita: number | null; // null: nunca visitado
+  distanciaKm?: number | null; // null: sem coordenadas (neutro)
 }
 
 export interface ScoreResult {
@@ -74,12 +100,14 @@ export function pontuar(input: ScoreInput, agora: Date): ScoreResult {
   const potencial = POTENCIAL[input.potencial];
   const horario = componenteHorario(input.melhorHorario, agora);
   const recencia = componenteRecencia(input.diasDesdeUltimaVisita);
+  const distancia = componenteDistancia(input.distanciaKm ?? null);
 
   const score =
     PESOS.urgencia * urgencia +
     PESOS.potencial * potencial +
     PESOS.horario * horario +
-    PESOS.recencia * recencia;
+    PESOS.recencia * recencia +
+    PESOS.distancia * distancia;
 
   const motivos: string[] = [];
 
@@ -95,6 +123,10 @@ export function pontuar(input: ScoreInput, agora: Date): ScoreResult {
 
   if (input.melhorHorario && horario >= 0.5) {
     motivos.push(`horário ideal por volta de ${input.melhorHorario}`);
+  }
+
+  if (input.distanciaKm !== undefined && input.distanciaKm !== null) {
+    motivos.push(`a ${input.distanciaKm.toFixed(1)} km de você`);
   }
 
   if (input.diasDesdeUltimaVisita === null) {

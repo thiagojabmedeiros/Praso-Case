@@ -1,6 +1,8 @@
 import {
+  componenteDistancia,
   componenteHorario,
   componenteRecencia,
+  haversineKm,
   pontuar,
   PESOS,
 } from './scoring';
@@ -31,6 +33,35 @@ describe('scoring', () => {
     it('decai linearmente entre 1h e 3h', () => {
       // 2h de distância (16:00) → meio caminho
       expect(componenteHorario('16:00', AGORA_18H)).toBeCloseTo(0.5);
+    });
+  });
+
+  describe('haversineKm', () => {
+    it('calcula distância conhecida (São Paulo–Rio ≈ 361 km em linha reta)', () => {
+      const saoPaulo = { lat: -23.5505, lng: -46.6333 };
+      const rio = { lat: -22.9068, lng: -43.1729 };
+      expect(haversineKm(saoPaulo, rio)).toBeGreaterThan(355);
+      expect(haversineKm(saoPaulo, rio)).toBeLessThan(365);
+    });
+
+    it('é zero para o mesmo ponto', () => {
+      const p = { lat: -8.2, lng: -34.9 };
+      expect(haversineKm(p, p)).toBeCloseTo(0);
+    });
+  });
+
+  describe('componenteDistancia', () => {
+    it('é neutro (0,5) sem coordenadas', () => {
+      expect(componenteDistancia(null)).toBe(0.5);
+    });
+
+    it('é 1 até 0,5 km e 0 a partir de 8 km', () => {
+      expect(componenteDistancia(0.3)).toBe(1);
+      expect(componenteDistancia(8)).toBe(0);
+    });
+
+    it('decai linearmente entre 0,5 e 8 km', () => {
+      expect(componenteDistancia(4.25)).toBeCloseTo(0.5);
     });
   });
 

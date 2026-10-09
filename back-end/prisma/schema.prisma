@@ -85,6 +85,10 @@ model Establishment {
   potencial       Potential
   status          EstablishmentStatus  @default(lead)
   endereco        String
+  latitude        Float?
+  longitude       Float?
+  // Precisão da coordenada: "poi" (ponto de interesse com o nome) ou "numero" (casa exata)
+  geocodePrecisao String?
   telefone        String?
   bairro          String
   fornecedorAtual String?
