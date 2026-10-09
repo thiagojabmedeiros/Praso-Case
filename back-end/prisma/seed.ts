@@ -156,6 +156,9 @@ const establishments = [
   },
   {
     id: 'est-recanto-paraibano',
+    latitude: -8.034628145177667,
+    longitude: -34.91188927540832,
+    geocodePrecisao: 'manual',
     potencial: 'alto' as const,
     razaoSocial: null,
     nomeFantasia: 'Recanto Paraibano',
@@ -170,6 +173,9 @@ const establishments = [
   },
   {
     id: 'est-seu-tito',
+    latitude: -8.104447336623387,
+    longitude: -34.887288060063874,
+    geocodePrecisao: 'manual',
     potencial: 'normal' as const,
     razaoSocial: null,
     nomeFantasia: 'Seu Tito',
@@ -184,6 +190,9 @@ const establishments = [
   },
   {
     id: 'est-skillus',
+    latitude: -8.062694590798907,
+    longitude: -34.896162477259445,
+    geocodePrecisao: 'manual',
     potencial: 'baixo' as const,
     razaoSocial: null,
     nomeFantasia: 'Skillus',
@@ -198,6 +207,9 @@ const establishments = [
   },
   {
     id: 'est-varanda-picanha',
+    latitude: -8.096747733429222,
+    longitude: -34.887516113029626,
+    geocodePrecisao: 'manual',
     potencial: 'normal' as const,
     razaoSocial: null,
     nomeFantasia: 'Varanda do Picanha',
