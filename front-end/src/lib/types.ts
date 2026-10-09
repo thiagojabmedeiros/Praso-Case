@@ -21,6 +21,8 @@ export interface Establishment {
   potencial: Potential;
   status: EstablishmentStatus;
   endereco: string;
+  latitude?: number | null;
+  longitude?: number | null;
   bairro: string;
   fornecedorAtual: string;
   melhorHorario: string;

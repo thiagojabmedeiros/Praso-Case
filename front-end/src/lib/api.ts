@@ -109,6 +109,8 @@ export const sellersAPI = {
 
 // Recomendações
 export const recommendationsAPI = {
-  getByVendedor: (vendedorId: string) =>
-    apiCall<Recomendacao[]>(`/recommendations/vendor/${vendedorId}`),
+  getByVendedor: (vendedorId: string, origem?: { lat: number; lng: number }) => {
+    const params = origem ? `?lat=${origem.lat}&lng=${origem.lng}` : "";
+    return apiCall<Recomendacao[]>(`/recommendations/vendor/${vendedorId}${params}`);
+  },
 };

@@ -28,9 +28,22 @@ export default function HojePage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Pede a posição para calcular a distância; se o usuário negar, a lista sai sem distância.
+    function obterOrigem(): Promise<{ lat: number; lng: number } | undefined> {
+      return new Promise((resolve) => {
+        if (typeof navigator === undefined || !navigator.geolocation) return resolve(undefined);
+        navigator.geolocation.getCurrentPosition(
+          (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+          () => resolve(undefined),
+          { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 },
+        );
+      });
+    }
+
     async function load() {
       try {
-        const data = await recommendationsAPI.getByVendedor(VENDEDOR_ID);
+        const origem = await obterOrigem();
+        const data = await recommendationsAPI.getByVendedor(VENDEDOR_ID, origem);
         setRecomendacoes(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Erro ao carregar estabelecimentos');
@@ -145,12 +158,16 @@ export default function HojePage() {
                     Iniciar Visita
                   </button>
                   <a
-                    href={`https://maps.google.com/?q=${encodeURIComponent(est.endereco)}`}
+                    href={
+                      est.latitude != null && est.longitude != null
+                        ? `https://waze.com/ul?ll=${est.latitude},${est.longitude}&navigate=yes`
+                        : `https://maps.google.com/?q=${encodeURIComponent(est.endereco)}`
+                    }
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-800 text-sm py-2 rounded transition text-center"
                   >
-                    Mapas
+                    {est.latitude != null ? 'Waze' : 'Mapas'}
                   </a>
                 </div>
               </div>
