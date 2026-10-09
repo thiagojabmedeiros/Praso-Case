@@ -28,7 +28,10 @@ async function apiCall<T>(
     throw new Error(`API error: ${response.status} ${response.statusText}`);
   }
 
-  return response.json();
+  // A API responde sem corpo quando não há resultado (ex.: follow-up inexistente).
+  // Nesse caso devolvemos null em vez de falhar o parse do JSON.
+  const texto = await response.text();
+  return (texto ? JSON.parse(texto) : null) as T;
 }
 
 // Establishments

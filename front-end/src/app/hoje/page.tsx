@@ -94,8 +94,7 @@ export default function HojePage() {
           </div>
         ) : (
           recomendacoes.map(({ establishment: est, score, motivos }) => (
-            <Link key={est.id} href={`/visita/${est.id}`}>
-              <div className="bg-white rounded-lg shadow hover:shadow-md transition p-4 cursor-pointer">
+            <div key={est.id} className="bg-white rounded-lg shadow hover:shadow-md transition p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <h2 className="font-semibold text-lg text-slate-900 truncate">
@@ -154,9 +153,12 @@ export default function HojePage() {
 
                 {/* CTA */}
                 <div className="mt-3 flex gap-2">
-                  <button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 rounded transition">
+                  <Link
+                    href={`/visita/${est.id}`}
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 rounded transition text-center"
+                  >
                     Iniciar Visita
-                  </button>
+                  </Link>
                   <a
                     href={
                       est.latitude != null && est.longitude != null
@@ -170,8 +172,7 @@ export default function HojePage() {
                     {est.latitude != null ? 'Waze' : 'Mapas'}
                   </a>
                 </div>
-              </div>
-            </Link>
+            </div>
           ))
         )}
       </div>
