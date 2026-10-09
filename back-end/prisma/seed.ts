@@ -21,6 +21,9 @@ const sellers = [
 const establishments = [
   {
     id: 'est-firetha',
+    latitude: -8.199201723330138,
+    longitude: -34.91828659814855,
+    geocodePrecisao: 'manual',
     fornecedorAtual: 'Distribuidora Teste B',
     melhorHorario: null,
     potencial: 'normal' as const,
@@ -51,6 +54,9 @@ const establishments = [
   },
   {
     id: 'est-meu-bar',
+    latitude: -8.196265315128022,
+    longitude: -34.918733871164086,
+    geocodePrecisao: 'manual',
     fornecedorAtual: 'Distribuidora Teste C',
     melhorHorario: null,
     potencial: 'normal' as const,
@@ -66,6 +72,9 @@ const establishments = [
   },
   {
     id: 'est-du-maranhao',
+    latitude: -8.198344350541936,
+    longitude: -34.91830598650777,
+    geocodePrecisao: 'manual',
     fornecedorAtual: null,
     melhorHorario: '11:30',
     potencial: 'alto' as const,
@@ -96,6 +105,9 @@ const establishments = [
   },
   {
     id: 'est-bar-da-galinha',
+    latitude: -8.211732566912971,
+    longitude: -34.918920899999996,
+    geocodePrecisao: 'manual',
     fornecedorAtual: null,
     melhorHorario: null,
     potencial: 'alto' as const,
@@ -126,6 +138,9 @@ const establishments = [
   },
   {
     id: 'est-zen-piedade',
+    latitude: -8.159983733129112,
+    longitude: -34.91404328650776,
+    geocodePrecisao: 'manual',
     fornecedorAtual: 'Distribuidora Teste C',
     melhorHorario: null,
     potencial: 'baixo' as const,

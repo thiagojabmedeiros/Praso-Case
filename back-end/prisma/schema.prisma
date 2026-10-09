@@ -87,7 +87,7 @@ model Establishment {
   endereco        String
   latitude        Float?
   longitude       Float?
-  // Precisão da coordenada: "poi" (ponto de interesse com o nome) ou "numero" (casa exata)
+  // Precisão da coordenada: "poi" (ponto de interesse), "numero" (casa exata) ou "manual" (informada)
   geocodePrecisao String?
   telefone        String?
   bairro          String
