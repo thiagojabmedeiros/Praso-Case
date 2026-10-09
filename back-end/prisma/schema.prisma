@@ -1,0 +1,154 @@
+// Modelagem do banco da Praso (Postgres no Supabase).
+// Derivada de src/types/index.ts. Ver DIARIO-BORDO.md para as decisões.
+
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "cjs"
+  importFileExtension = ""
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum EstablishmentStatus {
+  lead
+  oportunidade
+  cliente
+  churn
+}
+
+enum EstablishmentSegment {
+  restaurante
+  padaria
+  lanchonete
+  pizzaria
+  hamburgueria
+  cafeteria
+  bar
+}
+
+enum DocumentType {
+  MEI     @map("MEI")
+  NAO_MEI @map("nao-MEI")
+}
+
+enum Potential {
+  alto
+  normal
+  baixo
+}
+
+enum VisitType {
+  planejada
+  efetiva
+}
+
+enum VisitResult {
+  cadastrou
+  recusou
+  fechado
+  ausente
+  compra
+  em_acompanhamento @map("em-acompanhamento")
+}
+
+// ---------------------------------------------------------------------------
+// Models
+// ---------------------------------------------------------------------------
+
+model Seller {
+  id                 String   @id @default(uuid())
+  nome               String
+  pontuacaoAcumulada Float    @default(0)
+  createdAt          DateTime @default(now())
+
+  establishments Establishment[]
+  visits         Visit[]
+  purchases      Purchase[]
+
+  @@map("sellers")
+}
+
+model Establishment {
+  id              String               @id @default(uuid())
+  razaoSocial     String?
+  nomeFantasia    String
+  cnpj            String?              @unique
+  segmento        EstablishmentSegment
+  tipoDoc         DocumentType?
+  potencial       Potential
+  status          EstablishmentStatus  @default(lead)
+  endereco        String
+  telefone        String?
+  bairro          String
+  fornecedorAtual String?
+  melhorHorario   String? // "HH:mm", quando souber
+  notasContexto   String               @default("")
+  // Pontos de aquisição já atribuídos a este estabelecimento (MEI 0.5, Não-MEI 1, alto potencial 3)
+  score           Float                @default(0)
+  vendedorId      String?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  vendedor  Seller?    @relation(fields: [vendedorId], references: [id])
+  visits    Visit[]
+  purchases Purchase[]
+
+  @@index([status])
+  @@index([bairro])
+  @@index([vendedorId])
+  @@map("establishments")
+}
+
+// Histórico imutável: nunca é editado ou apagado. Correção se faz por anulação com motivo.
+model Visit {
+  id              String      @id @default(uuid())
+  establishmentId String
+  vendedorId      String
+  dataHora        DateTime
+  tipo            VisitType
+  resultado       VisitResult
+  // Geo (GPS automático). Opcional: visitas planejadas podem não ter.
+  geoLat          Float?
+  geoLng          Float?
+  geoAccuracy     Float?
+  nota            String      @default("")
+  // Anulação com motivo (única forma de "alterar" uma visita)
+  anuladaEm       DateTime?
+  motivoAnulacao  String?
+  createdAt       DateTime    @default(now())
+
+  establishment Establishment @relation(fields: [establishmentId], references: [id])
+  vendedor      Seller        @relation(fields: [vendedorId], references: [id])
+
+  @@index([establishmentId, dataHora])
+  @@index([vendedorId, dataHora])
+  @@map("visits")
+}
+
+// Compra registrada. "autonoma" = feita no app sem apoio do vendedor (conta para a recorrência).
+model Purchase {
+  id              String   @id @default(uuid())
+  establishmentId String
+  vendedorId      String
+  data            DateTime
+  valor           Decimal  @db.Decimal(12, 2)
+  autonoma        Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  establishment Establishment @relation(fields: [establishmentId], references: [id])
+  vendedor      Seller        @relation(fields: [vendedorId], references: [id])
+
+  @@index([establishmentId, data])
+  @@index([vendedorId])
+  @@map("purchases")
+}
+
+// Observação: FollowUp não é tabela. Ele é calculado a partir de purchases
+// (primeira compra + 45 dias, contagem de compras autônomas), como no backend atual.
