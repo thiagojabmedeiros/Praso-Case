@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 import { CalendarCheck2, CalendarX2, Clock, FileText, MapPin, MapPinOff, Phone } from 'lucide-react';
 import { BotaoGoogleMaps, BotaoWaze } from '@/components/botoes-navegacao';
-import { Recomendacao } from '@/lib/types';
-import { recommendationsAPI } from '@/lib/api';
+import { Recomendacao, Visit, VisitResult } from '@/lib/types';
+import { recommendationsAPI, visitsAPI } from '@/lib/api';
 import {
   Badge,
   ButtonLink,
@@ -31,6 +31,17 @@ const STATUS: Record<string, { rotulo: string; tom: Tom }> = {
 
 const TURNOS: Record<string, string> = { manha: 'manhã', tarde: 'tarde', noite: 'noite' };
 
+const RESULTADO: Record<VisitResult, { rotulo: string; tom: Tom }> = {
+  cadastrou: { rotulo: 'Cadastrou', tom: 'success' },
+  compra: { rotulo: 'Compra', tom: 'success' },
+  'em-acompanhamento': { rotulo: 'Acompanhar', tom: 'primary' },
+  ausente: { rotulo: 'Ausente', tom: 'warning' },
+  fechado: { rotulo: 'Fechado', tom: 'warning' },
+  recusou: { rotulo: 'Recusou', tom: 'danger' },
+};
+
+const diaRecife = (iso: string) => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Recife' }).format(new Date(iso));
+
 type Aba = 'pendentes' | 'visitados';
 
 /** Cor do motivo conforme o que ele significa para o vendedor. */
@@ -45,6 +56,8 @@ function tomDoMotivo(motivo: string): Tom {
 
 export default function HojePage() {
   const [recomendacoes, setRecomendacoes] = useState<Recomendacao[]>([]);
+  // Resultado das visitas válidas de hoje, por estabelecimento (para mostrar a ação feita).
+  const [acoesHoje, setAcoesHoje] = useState<Record<string, VisitResult[]>>({});
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
   const [semLocalizacao, setSemLocalizacao] = useState(false);
@@ -73,7 +86,20 @@ export default function HojePage() {
       try {
         const origem = await obterOrigem();
         setSemLocalizacao(!origem);
-        setRecomendacoes(await recommendationsAPI.getByVendedor(VENDEDOR_ID, origem));
+        const [rec, vis] = await Promise.all([
+          recommendationsAPI.getByVendedor(VENDEDOR_ID, origem),
+          visitsAPI.getAll().catch(() => [] as Visit[]),
+        ]);
+        setRecomendacoes(rec);
+        const hoje = diaRecife(new Date().toISOString());
+        const acoes: Record<string, VisitResult[]> = {};
+        vis
+          .filter((v) => v.vendedorId === VENDEDOR_ID && !v.anuladaEm && diaRecife(v.dataHora) === hoje)
+          .sort((a, b) => a.dataHora.localeCompare(b.dataHora))
+          .forEach((v) => {
+            acoes[v.establishmentId] = [...(acoes[v.establishmentId] ?? []), v.resultado];
+          });
+        setAcoesHoje(acoes);
       } catch (err) {
         setErro(err instanceof Error ? err.message : 'Erro ao carregar estabelecimentos');
       } finally {
@@ -169,6 +195,7 @@ export default function HojePage() {
             {lista.map(({ establishment: est, score, motivos, visitadoHoje }, i) => {
               const status = STATUS[est.status] ?? STATUS.churn;
               const prioridade = Math.round(score * 100);
+              const acoes = acoesHoje[est.id] ?? [];
               const horario = est.melhorHorario
                 ? `melhor às ${est.melhorHorario}`
                 : est.melhorTurno
@@ -179,12 +206,21 @@ export default function HojePage() {
                 <li key={est.id} className="animate-fade-up" style={{ animationDelay: `${Math.min(i, 5) * 45}ms` }}>
                   <Card className="space-y-3">
                     <div className="flex items-start gap-3">
-                      <span
-                        aria-label={`Posição ${i + 1}`}
-                        className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary-soft text-sm font-extrabold text-primary-text"
-                      >
-                        {i + 1}
-                      </span>
+                      {visitadoHoje ? (
+                        <span
+                          aria-hidden="true"
+                          className="flex size-9 shrink-0 items-center justify-center rounded-full bg-success-soft text-success-text"
+                        >
+                          <CalendarCheck2 className="size-5" />
+                        </span>
+                      ) : (
+                        <span
+                          aria-label={`Posição ${i + 1}`}
+                          className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary-soft text-sm font-extrabold text-primary-text"
+                        >
+                          {i + 1}
+                        </span>
+                      )}
                       <div className="min-w-0 flex-1">
                         <h2 className="line-clamp-2 text-base font-bold text-foreground">{est.nomeFantasia}</h2>
                         <p className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-sm text-muted-foreground">
@@ -203,6 +239,19 @@ export default function HojePage() {
                       <Badge tom={status.tom}>{status.rotulo}</Badge>
                     </div>
 
+                    {/* Visitado hoje: só o status da ação. Métricas e pontuação ficam nos pendentes. */}
+                    {visitadoHoje && acoes.length > 0 && (
+                      <ul className="flex flex-wrap gap-1.5" aria-label="Ações feitas hoje">
+                        {acoes.map((resultado, indice) => (
+                          <li key={`${resultado}-${indice}`}>
+                            <Badge tom={RESULTADO[resultado].tom}>{RESULTADO[resultado].rotulo}</Badge>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+
+                    {!visitadoHoje && (
+                    <>
                     {/* Prioridade */}
                     <div className="flex items-center gap-3">
                       <div
@@ -233,6 +282,9 @@ export default function HojePage() {
                           </li>
                         ))}
                       </ul>
+                    )}
+
+                    </>
                     )}
 
                     {/* Ações: visitado hoje mostra o resumo do que foi feito; contato e rotas seguem disponíveis */}
