@@ -7,11 +7,11 @@ import { Establishment, Turno, Visit, VisitResult } from '@/lib/types';
 import { establishmentsAPI, followupsAPI, visitsAPI } from '@/lib/api';
 import { FornecimentosCard } from '@/components/fornecimentos-card';
 
-// Ordem estratégica: resultados que geram valor primeiro; os que ainda podem virar
-// venda com nova tentativa no meio; a recusa por último.
+// Ordem do funil: cadastro primeiro, depois a venda; no meio, os que ainda podem virar
+// venda com nova tentativa; a recusa por último.
 const visitResults: { value: VisitResult; label: string; emoji: string }[] = [
-  { value: 'compra', label: 'Compra', emoji: '🛒' },
   { value: 'cadastrou', label: 'Cadastrou', emoji: '✅' },
+  { value: 'compra', label: 'Compra', emoji: '🛒' },
   { value: 'em-acompanhamento', label: 'Acompanhamento', emoji: '📞' },
   { value: 'ausente', label: 'Ausente', emoji: '😴' },
   { value: 'fechado', label: 'Fechado', emoji: '🚪' },
