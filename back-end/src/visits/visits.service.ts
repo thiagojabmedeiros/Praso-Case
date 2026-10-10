@@ -21,6 +21,7 @@ export class VisitsService {
         geoLng: data.geo?.lng ?? null,
         geoAccuracy: data.geo?.accuracy ?? null,
         nota: data.nota ?? '',
+        proximoContato: data.proximoContato ? new Date(data.proximoContato) : null,
       },
     });
     return toVisit(row);

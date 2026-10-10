@@ -123,6 +123,8 @@ model Visit {
   geoLng          Float?
   geoAccuracy     Float?
   nota            String      @default("")
+  // Data combinada para o próximo contato (retorno ou acompanhamento)
+  proximoContato  DateTime?
   // Anulação com motivo (única forma de "alterar" uma visita)
   anuladaEm       DateTime?
   motivoAnulacao  String?

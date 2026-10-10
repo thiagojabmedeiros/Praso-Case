@@ -42,6 +42,7 @@ export interface Visit {
   resultado: VisitResult;
   geo?: Geo;
   nota: string;
+  proximoContato?: Date | null;
   createdAt: Date;
 }
 

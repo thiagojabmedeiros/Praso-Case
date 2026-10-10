@@ -58,6 +58,7 @@ export function toVisit(row: VisitRow): Visit {
         }
       : undefined,
     nota: row.nota,
+    proximoContato: row.proximoContato,
     createdAt: row.createdAt,
   };
 }
