@@ -46,6 +46,8 @@ export interface Visit {
   proximoContato?: Date | null;
   melhorTurno?: Turno | null;
   pontosGerados?: number;
+  /** Compra ligada a esta visita (só existe quando o resultado é "compra"). */
+  compra?: { valor: number; autonoma: boolean } | null;
   anuladaEm?: Date | null;
   motivoAnulacao?: string | null;
   createdAt: Date;

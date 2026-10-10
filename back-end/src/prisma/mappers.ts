@@ -41,7 +41,8 @@ export function toEstablishment(row: EstablishmentRow): Establishment {
   };
 }
 
-export function toVisit(row: VisitRow): Visit {
+/** `compra` vem da compra ligada à visita (se houver); a visita não tem relação direta no schema. */
+export function toVisit(row: VisitRow, compra: { valor: number; autonoma: boolean } | null = null): Visit {
   const hasGeo = row.geoLat !== null && row.geoLng !== null;
   return {
     id: row.id,
@@ -61,6 +62,7 @@ export function toVisit(row: VisitRow): Visit {
     proximoContato: row.proximoContato,
     melhorTurno: row.melhorTurno,
     pontosGerados: row.pontosGerados,
+    compra,
     anuladaEm: row.anuladaEm,
     motivoAnulacao: row.motivoAnulacao,
     createdAt: row.createdAt,

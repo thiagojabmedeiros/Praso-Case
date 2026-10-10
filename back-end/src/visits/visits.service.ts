@@ -1,14 +1,14 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { Visit } from '../types';
 import { PrismaService } from '../prisma/prisma.service';
-import { Prisma } from '../generated/prisma/client';
+import { Prisma, type Visit as VisitRow } from '../generated/prisma/client';
 import { resultToDb, toVisit } from '../prisma/mappers';
 import { pontosDeAquisicao } from './pontuacao';
 import { registrarRecorrencia } from '../purchases/recorrencia';
 import { MENSAGEM_META_BATIDA, metaBatidaPorCompras } from '../purchases/ciclo';
 
 // `compra` é opcional e só vale quando o resultado da visita é "compra".
-type CreateInput = Omit<Visit, 'id' | 'createdAt' | 'pontosGerados' | 'anuladaEm' | 'motivoAnulacao'> & {
+export type CreateInput = Omit<Visit, 'id' | 'createdAt' | 'pontosGerados' | 'anuladaEm' | 'motivoAnulacao' | 'compra'> & {
   compra?: { valor: number; autonoma: boolean };
 };
 
@@ -99,7 +99,8 @@ export class VisitsService {
       const atualizada = pontos > 0
         ? await tx.visit.update({ where: { id: row.id }, data: { pontosGerados: pontos } })
         : row;
-      return toVisit(atualizada);
+      const compra = await tx.purchase.findFirst({ where: { visitId: row.id }, select: { valor: true, autonoma: true } });
+      return toVisit(atualizada, compra ? { valor: Number(compra.valor), autonoma: compra.autonoma } : null);
     });
   }
 
@@ -153,12 +154,25 @@ export class VisitsService {
       where: { establishmentId },
       orderBy: { createdAt: 'desc' },
     });
-    return rows.map(toVisit);
+    return this.comCompras(rows);
   }
 
   async findAll(): Promise<Visit[]> {
     const rows = await this.prisma.visit.findMany({ orderBy: { createdAt: 'desc' } });
-    return rows.map(toVisit);
+    return this.comCompras(rows);
+  }
+
+  /** Anexa a compra de cada visita (uma consulta só, em vez de uma por visita). */
+  private async comCompras(rows: VisitRow[]): Promise<Visit[]> {
+    if (rows.length === 0) return [];
+    const compras = await this.prisma.purchase.findMany({
+      where: { visitId: { in: rows.map((r) => r.id) } },
+      select: { visitId: true, valor: true, autonoma: true },
+    });
+    const porVisita = new Map(
+      compras.map((c) => [c.visitId as string, { valor: Number(c.valor), autonoma: c.autonoma }]),
+    );
+    return rows.map((r) => toVisit(r, porVisita.get(r.id) ?? null));
   }
 }
 

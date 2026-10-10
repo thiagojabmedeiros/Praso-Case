@@ -1,5 +1,6 @@
 import { Controller, Get, Post, Patch, Param, Body } from '@nestjs/common';
 import { VisitsService } from './visits.service';
+import type { CreateInput } from './visits.service';
 import type { Visit } from '../types';
 
 @Controller('visits')
@@ -17,7 +18,7 @@ export class VisitsController {
   }
 
   @Post()
-  create(@Body() data: Omit<Visit, 'id' | 'createdAt'>) {
+  create(@Body() data: CreateInput) {
     return this.service.create(data);
   }
 
