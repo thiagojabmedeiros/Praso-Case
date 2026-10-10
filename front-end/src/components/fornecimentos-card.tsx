@@ -1,8 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
+import { Plus, Trash2, Truck } from 'lucide-react';
 import { fornecimentosAPI } from '@/lib/api';
 import { Fornecimento } from '@/lib/types';
+import { Badge, Button } from '@/components/ui';
 
 export const CATEGORIAS = [
   { value: 'carne', label: 'Carne' },
@@ -17,6 +19,9 @@ export const CATEGORIAS = [
 
 const labelCategoria = (valor: string) => CATEGORIAS.find((c) => c.value === valor)?.label ?? valor;
 
+const CAMPO =
+  'min-h-11 w-full rounded-xl border border-input bg-card px-3 text-base text-foreground placeholder:text-muted-foreground';
+
 interface Props {
   establishmentId: string;
   editavel?: boolean;
@@ -24,6 +29,7 @@ interface Props {
 
 /** Distribuidoras que fornecem o estabelecimento, por categoria. Permite adicionar e remover. */
 export function FornecimentosCard({ establishmentId, editavel = true }: Props) {
+  const idBase = useId();
   const [lista, setLista] = useState<Fornecimento[]>([]);
   const [conhecidas, setConhecidas] = useState<string[]>([]);
   const [nome, setNome] = useState('');
@@ -34,7 +40,7 @@ export function FornecimentosCard({ establishmentId, editavel = true }: Props) {
     fornecimentosAPI
       .listar(establishmentId)
       .then(setLista)
-      .catch(() => setErro('Não foi possível carregar os fornecedores'));
+      .catch(() => setErro('Não foi possível carregar os fornecedores.'));
     fornecimentosAPI
       .distribuidoras()
       .then((d) => setConhecidas(d.map((x) => x.nome)))
@@ -52,7 +58,7 @@ export function FornecimentosCard({ establishmentId, editavel = true }: Props) {
       }
       setNome('');
     } catch (err) {
-      setErro(err instanceof Error ? err.message : 'Erro ao adicionar fornecedor');
+      setErro(err instanceof Error ? err.message : 'Erro ao adicionar o fornecedor.');
     }
   }
 
@@ -61,33 +67,41 @@ export function FornecimentosCard({ establishmentId, editavel = true }: Props) {
       await fornecimentosAPI.remover(f.id);
       setLista((atual) => atual.filter((x) => x.id !== f.id));
     } catch {
-      setErro('Erro ao remover fornecedor');
+      setErro('Erro ao remover o fornecedor.');
     }
   }
 
   return (
-    <div className="mt-4">
-      <h3 className="text-sm font-semibold text-slate-900 mb-2">🚚 Fornecedores</h3>
+    <section aria-labelledby={`${idBase}-titulo`} className="space-y-3">
+      <h2
+        id={`${idBase}-titulo`}
+        className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-muted-foreground"
+      >
+        <Truck aria-hidden="true" className="size-4" />
+        Fornecedores
+      </h2>
 
       {lista.length === 0 ? (
-        <p className="text-sm text-slate-500">Nenhum fornecedor cadastrado.</p>
+        <p className="text-sm text-muted-foreground">Nenhum fornecedor cadastrado.</p>
       ) : (
-        <ul className="space-y-1 text-sm">
+        <ul className="divide-y divide-border">
           {lista.map((f) => (
-            <li key={f.id} className="flex items-center justify-between gap-2">
-              <span>
-                <span className="font-medium">{f.distribuidora.nome}</span>{' '}
-                <span className="text-slate-500">· {labelCategoria(f.categoria)}</span>
-              </span>
+            <li key={f.id} className="flex items-center justify-between gap-2 py-1.5 first:pt-0 last:pb-0">
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-foreground">{f.distribuidora.nome}</p>
+                <Badge tom="primary" className="mt-0.5">
+                  {labelCategoria(f.categoria)}
+                </Badge>
+              </div>
               {editavel && (
-                <button
-                  type="button"
+                <Button
+                  variante="ghost"
+                  aria-label={`Remover ${f.distribuidora.nome} (${labelCategoria(f.categoria)})`}
                   onClick={() => remover(f)}
-                  className="text-xs text-red-700 hover:underline"
-                  aria-label={`Remover ${f.distribuidora.nome}`}
+                  className="size-11 shrink-0 !p-0 text-danger-text hover:bg-danger-soft"
                 >
-                  remover
-                </button>
+                  <Trash2 aria-hidden="true" className="size-4" />
+                </Button>
               )}
             </li>
           ))}
@@ -95,24 +109,34 @@ export function FornecimentosCard({ establishmentId, editavel = true }: Props) {
       )}
 
       {editavel && (
-        <div className="mt-3 flex flex-col gap-2">
-          <div className="flex gap-2">
+        <div className="space-y-2 rounded-xl bg-muted p-3">
+          <div>
+            <label htmlFor={`${idBase}-nome`} className="mb-1 block text-sm font-semibold text-foreground">
+              Distribuidora
+            </label>
             <input
-              list="distribuidoras-conhecidas"
+              id={`${idBase}-nome`}
+              list={`${idBase}-conhecidas`}
               value={nome}
               onChange={(e) => setNome(e.target.value)}
               placeholder="Nome da distribuidora"
-              className="flex-1 border border-slate-300 rounded px-3 py-2 text-sm"
+              className={CAMPO}
             />
-            <datalist id="distribuidoras-conhecidas">
+            <datalist id={`${idBase}-conhecidas`}>
               {conhecidas.map((c) => (
                 <option key={c} value={c} />
               ))}
             </datalist>
+          </div>
+          <div>
+            <label htmlFor={`${idBase}-categoria`} className="mb-1 block text-sm font-semibold text-foreground">
+              Categoria
+            </label>
             <select
+              id={`${idBase}-categoria`}
               value={categoria}
               onChange={(e) => setCategoria(e.target.value)}
-              className="border border-slate-300 rounded px-2 py-2 text-sm"
+              className={CAMPO}
             >
               {CATEGORIAS.map((c) => (
                 <option key={c.value} value={c.value}>
@@ -121,18 +145,18 @@ export function FornecimentosCard({ establishmentId, editavel = true }: Props) {
               ))}
             </select>
           </div>
-          <button
-            type="button"
-            onClick={adicionar}
-            disabled={!nome.trim()}
-            className="bg-slate-200 hover:bg-slate-300 disabled:opacity-50 text-slate-800 text-sm py-2 rounded transition"
-          >
-            + Adicionar fornecedor
-          </button>
+          <Button variante="outline" cheio onClick={adicionar} disabled={!nome.trim()}>
+            <Plus aria-hidden="true" className="size-4" />
+            Adicionar fornecedor
+          </Button>
         </div>
       )}
 
-      {erro && <p className="mt-2 text-xs text-red-700">{erro}</p>}
-    </div>
+      {erro && (
+        <p role="alert" className="rounded-lg bg-danger-soft px-3 py-2 text-sm font-medium text-danger-text">
+          {erro}
+        </p>
+      )}
+    </section>
   );
 }

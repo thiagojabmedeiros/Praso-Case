@@ -1,22 +1,62 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useParams } from 'next/navigation';
-import { Establishment, Visit, Purchase } from '@/lib/types';
-import { establishmentsAPI, visitsAPI, purchasesAPI } from '@/lib/api';
+import {
+  Ban,
+  CalendarClock,
+  DoorClosed,
+  PhoneCall,
+  ShoppingCart,
+  ThumbsDown,
+  UserPlus,
+  UserX,
+  type LucideIcon,
+} from 'lucide-react';
+import { Establishment, Purchase, Visit, VisitResult } from '@/lib/types';
+import { establishmentsAPI, purchasesAPI, visitsAPI } from '@/lib/api';
 import { FornecimentosCard } from '@/components/fornecimentos-card';
+import { Badge, Button, Card, EmptyState, ErroAviso, ListaSkeleton, PageHeader, cn, type Tom } from '@/components/ui';
+
+const RESULTADOS: Record<VisitResult, { rotulo: string; Icone: LucideIcon; tom: Tom }> = {
+  cadastrou: { rotulo: 'Cadastrou', Icone: UserPlus, tom: 'success' },
+  compra: { rotulo: 'Compra', Icone: ShoppingCart, tom: 'success' },
+  'em-acompanhamento': { rotulo: 'Acompanhar', Icone: PhoneCall, tom: 'primary' },
+  ausente: { rotulo: 'Ausente', Icone: UserX, tom: 'warning' },
+  fechado: { rotulo: 'Fechado', Icone: DoorClosed, tom: 'warning' },
+  recusou: { rotulo: 'Recusou', Icone: ThumbsDown, tom: 'danger' },
+};
+
+const STATUS: Record<string, { rotulo: string; tom: Tom }> = {
+  lead: { rotulo: 'Lead', tom: 'danger' },
+  oportunidade: { rotulo: 'Oportunidade', tom: 'warning' },
+  cliente: { rotulo: 'Cliente', tom: 'success' },
+  churn: { rotulo: 'Churn', tom: 'neutral' },
+};
+
+const moeda = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+const dia = (iso: string) => new Date(iso).toLocaleDateString('pt-BR');
+
+function Dado({ rotulo, children }: { rotulo: string; children: ReactNode }) {
+  return (
+    <div>
+      <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{rotulo}</dt>
+      <dd className="text-sm font-medium text-foreground">{children}</dd>
+    </div>
+  );
+}
 
 export default function ClientePage() {
   const params = useParams<{ id: string }>();
   const [establishment, setEstablishment] = useState<Establishment | null>(null);
   const [visits, setVisits] = useState<Visit[]>([]);
   const [purchases, setPurchases] = useState<Purchase[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState<string | null>(null);
+  const [erroAcao, setErroAcao] = useState<string | null>(null);
 
   useEffect(() => {
-    async function load() {
+    async function carregar() {
       try {
         const [est, vis, pur] = await Promise.all([
           establishmentsAPI.getById(params.id),
@@ -27,173 +67,170 @@ export default function ClientePage() {
         setVisits(vis);
         setPurchases(pur);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Erro ao carregar cliente');
+        setErro(err instanceof Error ? err.message : 'Erro ao carregar cliente');
       } finally {
-        setLoading(false);
+        setCarregando(false);
       }
     }
-    load();
+    carregar();
   }, [params.id]);
 
-  const handleAnular = async (visit: Visit) => {
+  const anular = async (visita: Visit) => {
     const motivo = window.prompt('Por que você está anulando esta visita?');
     if (!motivo || !motivo.trim()) return;
     try {
-      const anulada = await visitsAPI.anular(visit.id, motivo.trim());
-      setVisits((atual) => atual.map((v) => (v.id === visit.id ? anulada : v)));
+      setErroAcao(null);
+      const anulada = await visitsAPI.anular(visita.id, motivo.trim());
+      setVisits((atual) => atual.map((v) => (v.id === visita.id ? anulada : v)));
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Erro ao anular visita');
+      setErroAcao(err instanceof Error ? err.message : 'Erro ao anular a visita.');
     }
   };
 
-  if (loading) {
+  if (carregando) {
     return (
-      <div className="min-h-screen bg-slate-50 p-4 flex items-center justify-center">
-        <p className="text-slate-600">Carregando histórico...</p>
-      </div>
+      <>
+        <PageHeader titulo="Cliente" voltar={{ href: '/carteira', rotulo: 'Voltar para a carteira' }} />
+        <ListaSkeleton itens={3} altura="h-40" />
+      </>
     );
   }
 
-  if (error || !establishment) {
+  if (erro || !establishment) {
     return (
-      <div className="min-h-screen bg-slate-50 p-4">
-        <div className="max-w-2xl mx-auto">
-          <div className="bg-red-100 text-red-800 p-4 rounded-lg">{error || 'Cliente não encontrado'}</div>
-          <Link href="/carteira" className="mt-4 inline-block text-blue-600">
-            ← Voltar
-          </Link>
-        </div>
-      </div>
+      <>
+        <PageHeader titulo="Cliente" voltar={{ href: '/carteira', rotulo: 'Voltar para a carteira' }} />
+        <ErroAviso mensagem={erro || 'Cliente não encontrado.'} />
+      </>
     );
   }
+
+  const status = STATUS[establishment.status] ?? STATUS.churn;
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-20">
-      {/* Header */}
-      <div className="sticky top-0 z-10 bg-white border-b border-slate-200 p-4">
-        <div className="max-w-2xl mx-auto">
-          <Link href="/carteira" className="text-sm text-blue-600 hover:underline mb-2 inline-block">
-            ← Voltar
-          </Link>
-          <h1 className="text-2xl font-bold text-slate-900">{establishment.nomeFantasia}</h1>
-        </div>
-      </div>
+    <>
+      <PageHeader
+        titulo={establishment.nomeFantasia}
+        subtitulo={establishment.razaoSocial ?? undefined}
+        voltar={{ href: '/carteira', rotulo: 'Voltar para a carteira' }}
+        acao={<Badge tom={status.tom}>{status.rotulo}</Badge>}
+      />
 
-      {/* Content */}
-      <div className="max-w-2xl mx-auto p-4 space-y-4">
-        {/* Info */}
-        <div className="bg-white rounded-lg p-4 border border-slate-200">
-          <h2 className="font-semibold text-slate-900 mb-3">ℹ️ Informações</h2>
-          <div className="space-y-2 text-sm">
-            <p>
-              <span className="text-slate-600">CNPJ:</span>{' '}
-              <span className="font-mono">{establishment.cnpj}</span>
-            </p>
-            <p>
-              <span className="text-slate-600">Endereço:</span> {establishment.endereco}
-            </p>
-            <p>
-              <span className="text-slate-600">Segmento:</span> {establishment.segmento}
-            </p>
-          </div>
+      <div className="space-y-4 p-4">
+        {/* Informações */}
+        <Card className="animate-fade-up space-y-4">
+          <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Informações</h2>
+          <dl className="grid grid-cols-2 gap-x-4 gap-y-3">
+            <Dado rotulo="CNPJ">
+              {establishment.cnpj ? <span className="font-mono">{establishment.cnpj}</span> : '—'}
+            </Dado>
+            <Dado rotulo="Segmento">
+              <span className="capitalize">{establishment.segmento}</span>
+            </Dado>
+            <Dado rotulo="Telefone">{establishment.telefone ?? '—'}</Dado>
+            <Dado rotulo="Bairro">{establishment.bairro}</Dado>
+            <div className="col-span-2">
+              <Dado rotulo="Endereço">{establishment.endereco}</Dado>
+            </div>
+          </dl>
+        </Card>
+
+        <Card className="animate-fade-up">
           <FornecimentosCard establishmentId={establishment.id} />
-        </div>
+        </Card>
 
         {/* Compras */}
-        <div className="bg-white rounded-lg p-4 border border-slate-200">
-          <h2 className="font-semibold text-slate-900 mb-3">
-            🛒 Compras ({purchases.length})
+        <Card className="animate-fade-up space-y-3">
+          <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
+            Compras ({purchases.length})
           </h2>
           {purchases.length === 0 ? (
-            <p className="text-slate-600 text-sm">Nenhuma compra registrada</p>
+            <p className="text-sm text-muted-foreground">Nenhuma compra registrada.</p>
           ) : (
-            <div className="space-y-2">
-              {purchases.map((purchase) => (
-                <div
-                  key={purchase.id}
-                  className="flex items-center justify-between p-2 bg-slate-50 rounded border border-slate-200"
-                >
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-slate-900">
-                      {new Date(purchase.data).toLocaleDateString('pt-BR')}
-                    </p>
-                    <p className="text-xs text-slate-600">
-                      {purchase.autonoma ? '✅ Autônoma' : '👨 Com apoio'}
+            <ul className="divide-y divide-border">
+              {purchases.map((compra) => (
+                <li key={compra.id} className="flex items-center justify-between gap-3 py-2.5 first:pt-0 last:pb-0">
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">{dia(compra.data)}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {compra.autonoma ? 'Compra autônoma' : 'Com apoio do vendedor'}
                     </p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm font-semibold text-slate-900">
-                      R$ {purchase.valor.toFixed(2)}
-                    </p>
-                  </div>
-                </div>
+                  <p className="text-sm font-bold tabular-nums text-foreground">{moeda(compra.valor)}</p>
+                </li>
               ))}
-            </div>
+            </ul>
           )}
-        </div>
+        </Card>
 
         {/* Visitas */}
-        <div className="bg-white rounded-lg p-4 border border-slate-200">
-          <h2 className="font-semibold text-slate-900 mb-3">
-            📍 Histórico de Visitas ({visits.length})
+        <Card className="animate-fade-up space-y-3">
+          <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
+            Histórico de visitas ({visits.length})
           </h2>
-          {visits.length === 0 ? (
-            <p className="text-slate-600 text-sm">Nenhuma visita registrada</p>
-          ) : (
-            <div className="space-y-3">
-              {visits.map((visit) => (
-                <div
-                  key={visit.id}
-                  className={`p-3 rounded border border-slate-200 ${visit.anuladaEm ? 'bg-slate-100 opacity-60' : 'bg-slate-50'}`}
-                >
-                  <div className="flex items-start justify-between mb-2">
-                    <p className="text-sm font-medium text-slate-900">
-                      {new Date(visit.dataHora).toLocaleDateString('pt-BR')}{' '}
-                      {new Date(visit.dataHora).toLocaleTimeString('pt-BR', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </p>
-                    <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded">
-                      {visit.tipo === 'efetiva' ? '✅ Efetiva' : '📅 Planejada'}
-                    </span>
-                  </div>
-                  <p className="text-sm font-medium text-slate-900 mb-1">
-                    Resultado: {visit.resultado}
-                  </p>
-                  {visit.nota && (
-                    <p className="text-sm text-slate-600">
-                      <strong>Nota:</strong> {visit.nota}
-                    </p>
-                  )}
-                  {visit.proximoContato && !visit.anuladaEm && (
-                    <p className="text-xs text-slate-600 mt-1">
-                      📅 Próximo contato: {new Date(visit.proximoContato).toLocaleDateString('pt-BR')}
-                    </p>
-                  )}
-                  {visit.anuladaEm ? (
-                    <p className="text-xs text-red-700 mt-2">
-                      Anulada em {new Date(visit.anuladaEm).toLocaleDateString('pt-BR')}: {visit.motivoAnulacao}
-                    </p>
-                  ) : (
-                    <button
-                      onClick={() => handleAnular(visit)}
-                      className="mt-2 text-xs text-red-700 hover:underline"
-                    >
-                      Anular visita
-                    </button>
-                  )}
-                  {visit.geo && (
-                    <p className="text-xs text-slate-500 mt-1">
-                      📍 {visit.geo.lat.toFixed(4)}, {visit.geo.lng.toFixed(4)} (±{Math.round(visit.geo.accuracy || 0)}m)
-                    </p>
-                  )}
-                </div>
-              ))}
-            </div>
+          {erroAcao && (
+            <p role="alert" className="rounded-lg bg-danger-soft px-3 py-2 text-sm font-medium text-danger-text">
+              {erroAcao}
+            </p>
           )}
-        </div>
+          {visits.length === 0 ? (
+            <EmptyState
+              icone={<CalendarClock aria-hidden="true" className="size-7" />}
+              titulo="Nenhuma visita ainda"
+              descricao="As visitas registradas para este cliente aparecem aqui."
+            />
+          ) : (
+            <ol className="space-y-3">
+              {visits.map((visita) => {
+                const r = RESULTADOS[visita.resultado];
+                const anulada = Boolean(visita.anuladaEm);
+                return (
+                  <li
+                    key={visita.id}
+                    className={cn('rounded-xl border border-border p-3', anulada ? 'bg-muted opacity-70' : 'bg-card')}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <Badge
+                        tom={anulada ? 'neutral' : r.tom}
+                        icone={<r.Icone aria-hidden="true" className="size-3.5" />}
+                      >
+                        {r.rotulo}
+                      </Badge>
+                      <time
+                        dateTime={visita.dataHora}
+                        className="text-xs font-medium tabular-nums text-muted-foreground"
+                      >
+                        {new Date(visita.dataHora).toLocaleDateString('pt-BR')} ·{' '}
+                        {new Date(visita.dataHora).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                      </time>
+                    </div>
+
+                    {visita.nota && <p className="mt-2 text-sm text-foreground">{visita.nota}</p>}
+
+                    {visita.proximoContato && !anulada && (
+                      <p className="mt-2 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                        <CalendarClock aria-hidden="true" className="size-3.5" />
+                        Próximo contato: {dia(visita.proximoContato)}
+                      </p>
+                    )}
+
+                    {anulada ? (
+                      <p className="mt-2 flex items-start gap-1.5 text-xs font-medium text-danger-text">
+                        <Ban aria-hidden="true" className="mt-0.5 size-3.5 shrink-0" />
+                        Anulada em {dia(visita.anuladaEm as string)}: {visita.motivoAnulacao}
+                      </p>
+                    ) : (
+                      <Button variante="ghost" className="-ml-3 mt-1 text-xs" onClick={() => anular(visita)}>
+                        Anular visita
+                      </Button>
+                    )}
+                  </li>
+                );
+              })}
+            </ol>
+          )}
+        </Card>
       </div>
-    </div>
+    </>
   );
 }

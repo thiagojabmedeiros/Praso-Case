@@ -1,52 +1,133 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter, useParams } from 'next/navigation';
-import Link from 'next/link';
+import { useEffect, useState, type ReactNode } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import {
+  Clock,
+  DoorClosed,
+  Loader2,
+  Map as MapaIcone,
+  MapPin,
+  Mic,
+  Navigation,
+  Phone,
+  PhoneCall,
+  ShoppingCart,
+  StickyNote,
+  ThumbsDown,
+  Trophy,
+  UserPlus,
+  UserX,
+  X,
+  type LucideIcon,
+} from 'lucide-react';
 import { Establishment, Turno, Visit, VisitResult } from '@/lib/types';
 import { establishmentsAPI, followupsAPI, visitsAPI } from '@/lib/api';
 import { FornecimentosCard } from '@/components/fornecimentos-card';
+import {
+  Badge,
+  Button,
+  ButtonLink,
+  Card,
+  EmptyState,
+  ErroAviso,
+  ListaSkeleton,
+  PageHeader,
+  buttonClasses,
+  cn,
+  type Tom,
+} from '@/components/ui';
 
 // Ordem do funil: cadastro primeiro, depois a venda; no meio, os que ainda podem virar
 // venda com nova tentativa; a recusa por último.
-const visitResults: { value: VisitResult; label: string; emoji: string }[] = [
-  { value: 'cadastrou', label: 'Cadastrou', emoji: '✅' },
-  { value: 'compra', label: 'Compra', emoji: '🛒' },
-  { value: 'em-acompanhamento', label: 'Acompanhamento', emoji: '📞' },
-  { value: 'ausente', label: 'Ausente', emoji: '😴' },
-  { value: 'fechado', label: 'Fechado', emoji: '🚪' },
-  { value: 'recusou', label: 'Recusou', emoji: '❌' },
+const RESULTADOS: { valor: VisitResult; rotulo: string; Icone: LucideIcon; tom: Tom }[] = [
+  { valor: 'cadastrou', rotulo: 'Cadastrou', Icone: UserPlus, tom: 'success' },
+  { valor: 'compra', rotulo: 'Compra', Icone: ShoppingCart, tom: 'success' },
+  { valor: 'em-acompanhamento', rotulo: 'Acompanhar', Icone: PhoneCall, tom: 'primary' },
+  { valor: 'ausente', rotulo: 'Ausente', Icone: UserX, tom: 'warning' },
+  { valor: 'fechado', rotulo: 'Fechado', Icone: DoorClosed, tom: 'warning' },
+  { valor: 'recusou', rotulo: 'Recusou', Icone: ThumbsDown, tom: 'danger' },
 ];
+
+const SELECIONADO: Record<Tom, string> = {
+  neutral: 'border-foreground bg-muted',
+  primary: 'border-primary bg-primary-soft text-primary-text',
+  success: 'border-success bg-success-soft text-success-text',
+  warning: 'border-warning bg-warning-soft text-warning-text',
+  danger: 'border-danger bg-danger-soft text-danger-text',
+};
+
+const TURNOS: { valor: Turno; rotulo: string }[] = [
+  { valor: 'manha', rotulo: 'Manhã' },
+  { valor: 'tarde', rotulo: 'Tarde' },
+  { valor: 'noite', rotulo: 'Noite' },
+];
+
+const RESULTADOS_COM_RETORNO: VisitResult[] = ['cadastrou', 'em-acompanhamento', 'fechado', 'ausente'];
+
+const STATUS: Record<string, { rotulo: string; tom: Tom }> = {
+  lead: { rotulo: 'Lead', tom: 'danger' },
+  oportunidade: { rotulo: 'Oportunidade', tom: 'warning' },
+  cliente: { rotulo: 'Cliente', tom: 'success' },
+  churn: { rotulo: 'Churn', tom: 'neutral' },
+};
+
+const CLASSE_CAMPO =
+  'min-h-11 w-full rounded-xl border border-input bg-card px-3 text-base text-foreground placeholder:text-muted-foreground';
+
+function Linha({ icone, rotulo, children }: { icone: ReactNode; rotulo: string; children: ReactNode }) {
+  return (
+    <div className="flex items-start gap-3">
+      <span aria-hidden="true" className="mt-0.5 text-muted-foreground">
+        {icone}
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{rotulo}</p>
+        <div className="text-sm font-medium text-foreground">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+const Pendente = () => <span className="font-normal italic text-muted-foreground">a levantar em campo</span>;
+
+function Secao({ titulo, children }: { titulo: string; children: ReactNode }) {
+  return (
+    <Card className="space-y-3 animate-fade-up">
+      <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">{titulo}</h2>
+      {children}
+    </Card>
+  );
+}
 
 export default function VisitaPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const [establishment, setEstablishment] = useState<Establishment | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedResult, setSelectedResult] = useState<VisitResult | null>(null);
-  const [note, setNote] = useState('');
+  const [carregando, setCarregando] = useState(true);
+  const [erroCarga, setErroCarga] = useState<string | null>(null);
+  const [erroForm, setErroForm] = useState<string | null>(null);
+  const [resultado, setResultado] = useState<VisitResult | null>(null);
+  const [nota, setNota] = useState('');
   const [proximoContato, setProximoContato] = useState('');
   const [valorCompra, setValorCompra] = useState('');
   const [melhorTurno, setMelhorTurno] = useState<Turno | null>(null);
   const [bloqueado, setBloqueado] = useState(false);
   const [compraAutonoma, setCompraAutonoma] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [useVoice, setUseVoice] = useState(false);
-  const [listeningVoice, setListeningVoice] = useState(false);
+  const [enviando, setEnviando] = useState(false);
+  const [ouvindo, setOuvindo] = useState(false);
 
   useEffect(() => {
-    async function load() {
+    async function carregar() {
       try {
-        const data = await establishmentsAPI.getById(params.id);
-        setEstablishment(data);
+        setEstablishment(await establishmentsAPI.getById(params.id));
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Erro ao carregar estabelecimento');
+        setErroCarga(err instanceof Error ? err.message : 'Erro ao carregar estabelecimento');
       } finally {
-        setLoading(false);
+        setCarregando(false);
       }
     }
-    load();
+    carregar();
   }, [params.id]);
 
   // Cliente que já bateu a meta de recorrência não recebe mais visitas.
@@ -57,325 +138,343 @@ export default function VisitaPage() {
       .catch(() => setBloqueado(false));
   }, [params.id]);
 
-  const startVoiceNote = () => {
+  const iniciarNotaPorVoz = () => {
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-      setError('Voz não disponível neste navegador');
+      setErroForm('A nota por voz não está disponível neste navegador. Digite a nota.');
       return;
     }
 
     const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'pt-BR';
-    recognition.continuous = false;
+    const reconhecimento = new SpeechRecognition();
+    reconhecimento.lang = 'pt-BR';
+    reconhecimento.continuous = false;
 
-    setListeningVoice(true);
-    recognition.start();
+    setOuvindo(true);
+    setErroForm(null);
+    reconhecimento.start();
 
-    recognition.onresult = (event: any) => {
-      const transcript = Array.from(event.results)
-        .map((result: any) => result[0].transcript)
+    reconhecimento.onresult = (event: any) => {
+      const texto = Array.from(event.results)
+        .map((r: any) => r[0].transcript)
         .join('');
-      setNote(transcript);
-      setListeningVoice(false);
+      setNota(texto);
+      setOuvindo(false);
     };
 
-    recognition.onerror = () => {
-      setListeningVoice(false);
-      setError('Erro ao capturar áudio');
+    reconhecimento.onerror = () => {
+      setOuvindo(false);
+      setErroForm('Não foi possível captar o áudio. Digite a nota.');
     };
   };
 
-  const handleSubmit = async () => {
-    if (!selectedResult) {
-      setError('Selecione um resultado');
+  const registrar = async () => {
+    if (!resultado) {
+      setErroForm('Escolha o resultado da visita.');
       return;
     }
-
-    if (selectedResult === 'compra' && !(Number(valorCompra) > 0)) {
-      setError('Informe o valor da compra');
+    if (resultado === 'compra' && !(Number(valorCompra) > 0)) {
+      setErroForm('Informe o valor da compra.');
       return;
     }
 
     try {
-      setIsSubmitting(true);
-      const visitData: Visit = {
+      setEnviando(true);
+      setErroForm(null);
+      const visita: Visit = {
         id: '',
         establishmentId: params.id,
         vendedorId: 'seller-1',
         dataHora: new Date().toISOString(),
         tipo: 'efetiva',
-        resultado: selectedResult,
-        nota: note,
+        resultado,
+        nota,
         proximoContato: proximoContato ? new Date(`${proximoContato}T12:00:00`).toISOString() : null,
         melhorTurno,
-        compra: selectedResult === 'compra' ? { valor: Number(valorCompra), autonoma: compraAutonoma } : null,
+        compra: resultado === 'compra' ? { valor: Number(valorCompra), autonoma: compraAutonoma } : null,
         createdAt: new Date().toISOString(),
       };
 
-      await visitsAPI.create(visitData);
+      await visitsAPI.create(visita);
       router.push('/hoje');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao registrar visita');
-      setIsSubmitting(false);
+      setErroForm(err instanceof Error ? err.message : 'Erro ao registrar a visita.');
+      setEnviando(false);
     }
   };
 
-  if (loading) {
+  if (carregando) {
     return (
-      <div className="min-h-screen bg-slate-50 p-4 flex items-center justify-center">
-        <p className="text-slate-600">Carregando...</p>
-      </div>
+      <>
+        <PageHeader titulo="Visita" voltar={{ href: '/hoje', rotulo: 'Voltar para Hoje' }} />
+        <ListaSkeleton itens={3} altura="h-40" />
+      </>
+    );
+  }
+
+  if (erroCarga || !establishment) {
+    return (
+      <>
+        <PageHeader titulo="Visita" voltar={{ href: '/hoje', rotulo: 'Voltar para Hoje' }} />
+        <ErroAviso mensagem={erroCarga || 'Estabelecimento não encontrado.'} />
+      </>
     );
   }
 
   if (bloqueado) {
     return (
-      <div className="min-h-screen bg-slate-50 p-4">
-        <div className="max-w-2xl mx-auto space-y-4">
-          <Link href="/carteira" className="text-sm text-blue-600 hover:underline inline-block">
-            ← Voltar para carteira
-          </Link>
-          <div className="bg-emerald-50 border border-emerald-200 text-emerald-900 p-4 rounded-lg">
-            <h1 className="font-semibold text-lg">🏆 {establishment?.nomeFantasia ?? 'Cliente'} já bateu a meta</h1>
-            <p className="text-sm mt-1">
-              Três compras autônomas registradas. Visitas e compras estão bloqueadas para este cliente.
-            </p>
-          </div>
-        </div>
-      </div>
+      <>
+        <PageHeader
+          titulo={establishment.nomeFantasia}
+          voltar={{ href: '/carteira', rotulo: 'Voltar para a carteira' }}
+        />
+        <EmptyState
+          icone={<Trophy aria-hidden="true" className="size-8 text-success-text" />}
+          titulo="Meta de recorrência batida"
+          descricao="Este cliente já fez as três compras autônomas. Visitas e compras estão bloqueadas."
+          acao={<ButtonLink href="/carteira">Voltar para a carteira</ButtonLink>}
+        />
+      </>
     );
   }
 
-  if (error || !establishment) {
-    return (
-      <div className="min-h-screen bg-slate-50 p-4">
-        <div className="max-w-2xl mx-auto">
-          <div className="bg-red-100 text-red-800 p-4 rounded-lg">
-            {error || 'Estabelecimento não encontrado'}
-          </div>
-          <Link href="/hoje" className="mt-4 inline-block text-blue-600">
-            ← Voltar
-          </Link>
-        </div>
-      </div>
-    );
-  }
+  const status = STATUS[establishment.status] ?? STATUS.churn;
+  const jaCadastrado = establishment.status !== 'lead';
+  const resultadosVisiveis = RESULTADOS.filter((r) => r.valor !== 'cadastrou' || !jaCadastrado);
+  const mostrarRetorno = resultado !== null && RESULTADOS_COM_RETORNO.includes(resultado);
+  const temCoordenadas = establishment.latitude != null && establishment.longitude != null;
+  const hoje = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-20">
-      {/* Header */}
-      <div className="sticky top-0 z-10 bg-white border-b border-slate-200 p-4">
-        <div className="max-w-2xl mx-auto">
-          <Link href="/hoje" className="text-sm text-blue-600 hover:underline mb-2 inline-block">
-            ← Voltar
-          </Link>
-          <h1 className="text-2xl font-bold text-slate-900">{establishment.nomeFantasia}</h1>
-        </div>
-      </div>
+    <>
+      <PageHeader
+        titulo={establishment.nomeFantasia}
+        subtitulo={`${establishment.bairro} · ${establishment.segmento}`}
+        voltar={{ href: '/hoje', rotulo: 'Voltar para Hoje' }}
+        acao={<Badge tom={status.tom}>{status.rotulo}</Badge>}
+      />
 
-      {/* Content */}
-      <div className="max-w-2xl mx-auto p-4 space-y-4">
-        {/* Cartão de contexto */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h2 className="font-semibold text-slate-900 mb-3">📋 Contexto da Visita</h2>
-          <div className="space-y-2 text-sm">
-            <p>
-              <span className="text-slate-600">Segmento:</span>{' '}
-              <span className="font-medium">{establishment.segmento}</span>
-            </p>
-            <p>
-              <span className="text-slate-600">Telefone:</span>{' '}
+      <div className="space-y-4 p-4">
+        {/* Contexto */}
+        <Secao titulo="Contexto da visita">
+          <div className="space-y-3">
+            <Linha icone={<Phone className="size-4" />} rotulo="Telefone">
               {establishment.telefone ? (
-                <a href={`tel:${establishment.telefone.replace(/[^0-9]/g, '')}`} className="font-medium text-blue-600">
+                <a
+                  href={`tel:${establishment.telefone.replace(/[^0-9+]/g, '')}`}
+                  className="text-primary-text underline-offset-2 hover:underline"
+                >
                   {establishment.telefone}
                 </a>
               ) : (
-                <span className="font-medium text-slate-500">a levantar em campo</span>
+                <Pendente />
               )}
-            </p>
-            <p>
-              <span className="text-slate-600">Endereço:</span>{' '}
-              <span className="font-medium">{establishment.endereco}</span>
-            </p>
-            <p>
-              <span className="text-slate-600">Melhor horário:</span>{' '}
-              <span className={establishment.melhorHorario ? 'font-medium' : 'font-medium text-slate-500'}>
-                {establishment.melhorHorario ?? 'a levantar em campo'}
-              </span>
-            </p>
-            <p>
-              <span className="text-slate-600">Melhor turno:</span>{' '}
-              <span className={establishment.melhorTurno ? 'font-medium' : 'font-medium text-slate-500'}>
-                {establishment.melhorTurno ? { manha: 'Manhã', tarde: 'Tarde', noite: 'Noite' }[establishment.melhorTurno] : 'a levantar em campo'}
-              </span>
-            </p>
+            </Linha>
+            <Linha icone={<MapPin className="size-4" />} rotulo="Endereço">
+              {establishment.endereco}
+            </Linha>
+            <Linha icone={<Clock className="size-4" />} rotulo="Melhor horário">
+              {establishment.melhorHorario ||
+                (establishment.melhorTurno ? (
+                  `turno da ${TURNOS.find((t) => t.valor === establishment.melhorTurno)?.rotulo.toLowerCase()}`
+                ) : (
+                  <Pendente />
+                ))}
+            </Linha>
             {establishment.notasContexto && (
-              <p>
-                <span className="text-slate-600">Notas:</span>{' '}
-                <span className="font-medium">{establishment.notasContexto}</span>
-              </p>
+              <Linha icone={<StickyNote className="size-4" />} rotulo="Notas">
+                {establishment.notasContexto}
+              </Linha>
             )}
           </div>
-          <FornecimentosCard establishmentId={establishment.id} />
-          <div className="mt-3 flex gap-2">
+
+          <div className="grid grid-cols-2 gap-2">
             <a
               href={
-                establishment.latitude != null && establishment.longitude != null
+                temCoordenadas
                   ? `https://www.google.com/maps/search/?api=1&query=${establishment.latitude},${establishment.longitude}`
                   : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(establishment.endereco)}`
               }
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-1 text-center bg-slate-200 hover:bg-slate-300 text-slate-800 text-sm py-2 rounded transition"
+              className={buttonClasses({ variante: 'outline' })}
             >
-              Abrir no Google Maps
+              <MapaIcone aria-hidden="true" className="size-4" />
+              Maps
             </a>
-            {establishment.latitude != null && establishment.longitude != null && (
+            {temCoordenadas ? (
               <a
                 href={`https://waze.com/ul?ll=${establishment.latitude},${establishment.longitude}&navigate=yes`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-1 text-center bg-slate-200 hover:bg-slate-300 text-slate-800 text-sm py-2 rounded transition"
+                className={buttonClasses({ variante: 'outline' })}
               >
-                Abrir no Waze
+                <Navigation aria-hidden="true" className="size-4" />
+                Waze
               </a>
+            ) : (
+              <span aria-disabled="true" className={buttonClasses({ variante: 'outline', className: 'opacity-50' })}>
+                <Navigation aria-hidden="true" className="size-4" />
+                Waze
+              </span>
             )}
           </div>
-        </div>
+        </Secao>
 
-        {/* Resultado da visita */}
-        <div className="bg-white border border-slate-200 rounded-lg p-4">
-          <h2 className="font-semibold text-slate-900 mb-3">✅ Resultado da Visita</h2>
-          {establishment.status !== 'lead' && (
-            <p className="mb-3 text-sm bg-emerald-50 border border-emerald-200 text-emerald-900 rounded px-3 py-2">
-              ✅ Já cadastrado na plataforma
+        {/* Fornecedores */}
+        <Card className="animate-fade-up">
+          <FornecimentosCard establishmentId={establishment.id} />
+        </Card>
+
+        {/* Resultado */}
+        <Secao titulo="Resultado da visita">
+          {jaCadastrado && (
+            <p className="flex items-center gap-2 rounded-xl bg-success-soft px-3 py-2 text-sm font-semibold text-success-text">
+              <UserPlus aria-hidden="true" className="size-4" />
+              Já cadastrado na plataforma
             </p>
           )}
-          <div className="grid grid-cols-2 gap-2">
-            {visitResults
-              .filter((result) => result.value !== 'cadastrou' || establishment.status === 'lead')
-              .map((result) => (
-              <button
-                key={result.value}
-                onClick={() => setSelectedResult(result.value)}
-                className={`p-3 rounded-lg text-sm font-medium transition ${
-                  selectedResult === result.value
-                    ? 'bg-blue-600 text-white border-2 border-blue-700'
-                    : 'bg-slate-100 text-slate-800 border-2 border-slate-200 hover:border-slate-300'
-                }`}
-              >
-                {result.emoji} {result.label}
-              </button>
-            ))}
+          <div className="grid grid-cols-2 gap-2" role="group" aria-label="Resultado da visita">
+            {resultadosVisiveis.map(({ valor, rotulo, Icone, tom }) => {
+              const ativo = resultado === valor;
+              return (
+                <button
+                  key={valor}
+                  type="button"
+                  aria-pressed={ativo}
+                  onClick={() => {
+                    setResultado(valor);
+                    setErroForm(null);
+                  }}
+                  className={cn(
+                    'flex min-h-16 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 px-2 py-2 text-sm font-semibold transition-colors',
+                    ativo ? SELECIONADO[tom] : 'border-border bg-card text-foreground hover:bg-muted',
+                  )}
+                >
+                  <Icone aria-hidden="true" className="size-5" />
+                  {rotulo}
+                </button>
+              );
+            })}
           </div>
-        </div>
+        </Secao>
 
-        {/* Nota rápida */}
-        <div className="bg-white border border-slate-200 rounded-lg p-4">
-          <h2 className="font-semibold text-slate-900 mb-3">🕒 Melhor turno para voltar</h2>
-          <div className="flex gap-2">
-            {(
-              [
-                { value: 'manha', label: 'Manhã' },
-                { value: 'tarde', label: 'Tarde' },
-                { value: 'noite', label: 'Noite' },
-              ] as { value: Turno; label: string }[]
-            ).map((turno) => (
-              <button
-                key={turno.value}
-                type="button"
-                onClick={() => setMelhorTurno(melhorTurno === turno.value ? null : turno.value)}
-                className={`flex-1 py-2 rounded text-sm transition ${
-                  melhorTurno === turno.value
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-slate-200 hover:bg-slate-300 text-slate-800'
-                }`}
-              >
-                {turno.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {selectedResult === 'compra' && (
-          <div className="bg-white border border-slate-200 rounded-lg p-4">
-            <h2 className="font-semibold text-slate-900 mb-3">🛒 Dados da compra</h2>
-            <label className="block text-sm text-slate-700 mb-1">Valor (R$)</label>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              inputMode="decimal"
-              value={valorCompra}
-              onChange={(e) => setValorCompra(e.target.value)}
-              className="w-full border border-slate-300 rounded px-3 py-2 text-sm"
-            />
-            <label className="mt-3 flex items-center gap-2 text-sm text-slate-700">
+        {/* Dados da compra */}
+        {resultado === 'compra' && (
+          <Secao titulo="Dados da compra">
+            <div>
+              <label htmlFor="valor-compra" className="mb-1 block text-sm font-semibold text-foreground">
+                Valor da compra (R$)
+              </label>
+              <input
+                id="valor-compra"
+                type="number"
+                min="0"
+                step="0.01"
+                inputMode="decimal"
+                value={valorCompra}
+                onChange={(e) => setValorCompra(e.target.value)}
+                placeholder="0,00"
+                className={CLASSE_CAMPO}
+              />
+            </div>
+            <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm font-medium text-foreground">
               <input
                 type="checkbox"
                 checked={compraAutonoma}
                 onChange={(e) => setCompraAutonoma(e.target.checked)}
+                className="size-5 accent-primary"
               />
               Comprou sozinho, sem apoio do vendedor
             </label>
-          </div>
+          </Secao>
         )}
 
-        {(selectedResult === 'cadastrou' || selectedResult === 'em-acompanhamento' || selectedResult === 'fechado' || selectedResult === 'ausente') && (
-          <div className="bg-white border border-slate-200 rounded-lg p-4">
-            <h2 className="font-semibold text-slate-900 mb-3">📅 Próximo contato</h2>
-            <input
-              type="date"
-              value={proximoContato}
-              onChange={(e) => setProximoContato(e.target.value)}
-              className="w-full border border-slate-300 rounded px-3 py-2 text-sm"
+        {/* Retorno */}
+        {mostrarRetorno && (
+          <Secao titulo="Próximo contato">
+            <div>
+              <label htmlFor="retorno" className="mb-1 block text-sm font-semibold text-foreground">
+                Data combinada para voltar
+              </label>
+              <input
+                id="retorno"
+                type="date"
+                min={hoje}
+                value={proximoContato}
+                onChange={(e) => setProximoContato(e.target.value)}
+                className={CLASSE_CAMPO}
+              />
+            </div>
+          </Secao>
+        )}
+
+        {/* Turno */}
+        <Secao titulo="Melhor turno para voltar">
+          <div className="grid grid-cols-3 gap-2" role="group" aria-label="Melhor turno para voltar">
+            {TURNOS.map((turno) => {
+              const ativo = melhorTurno === turno.valor;
+              return (
+                <button
+                  key={turno.valor}
+                  type="button"
+                  aria-pressed={ativo}
+                  onClick={() => setMelhorTurno(ativo ? null : turno.valor)}
+                  className={cn(
+                    'min-h-11 cursor-pointer rounded-xl border-2 text-sm font-semibold transition-colors',
+                    ativo
+                      ? 'border-primary bg-primary-soft text-primary-text'
+                      : 'border-border bg-card text-foreground hover:bg-muted',
+                  )}
+                >
+                  {turno.rotulo}
+                </button>
+              );
+            })}
+          </div>
+        </Secao>
+
+        {/* Nota */}
+        <Secao titulo="Nota rápida">
+          <div>
+            <label htmlFor="nota" className="mb-1 block text-sm font-semibold text-foreground">
+              O que foi conversado
+            </label>
+            <textarea
+              id="nota"
+              value={nota}
+              onChange={(e) => setNota(e.target.value)}
+              rows={3}
+              placeholder="Ex.: dono interessado, combinou de voltar quinta"
+              className={cn(CLASSE_CAMPO, 'py-2')}
             />
-            <p className="text-xs text-slate-500 mt-2">Quando você combinou de voltar ou de tentar de novo.</p>
           </div>
-        )}
-
-        <div className="bg-white border border-slate-200 rounded-lg p-4">
-          <h2 className="font-semibold text-slate-900 mb-3">📝 Nota Rápida</h2>
-          <textarea
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="Ex: Proprietário interessado, combinar retorno amanhã..."
-            className="w-full p-2 border border-slate-300 rounded text-sm resize-none h-20"
-          />
-          <div className="mt-3 flex gap-2">
-            <button
-              onClick={startVoiceNote}
-              disabled={listeningVoice}
-              className={`flex-1 py-2 rounded transition text-sm font-medium ${
-                listeningVoice
-                  ? 'bg-red-600 text-white animate-pulse'
-                  : 'bg-slate-200 hover:bg-slate-300 text-slate-800'
-              }`}
-            >
-              {listeningVoice ? '🎤 Ouvindo...' : '🎤 Nota por voz'}
-            </button>
-            <button
-              onClick={() => setNote('')}
-              className="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-800 py-2 rounded transition text-sm"
-            >
+          <div className="grid grid-cols-2 gap-2">
+            <Button variante="secondary" onClick={iniciarNotaPorVoz} disabled={ouvindo}>
+              <Mic aria-hidden="true" className={cn('size-4', ouvindo && 'text-danger-text')} />
+              {ouvindo ? 'Ouvindo…' : 'Ditar nota'}
+            </Button>
+            <Button variante="secondary" onClick={() => setNota('')} disabled={!nota}>
+              <X aria-hidden="true" className="size-4" />
               Limpar
-            </button>
+            </Button>
           </div>
-        </div>
-
-        {/* Botão de envio */}
-        <button
-          onClick={handleSubmit}
-          disabled={isSubmitting || !selectedResult}
-          className={`w-full py-3 rounded-lg font-semibold text-white transition ${
-            isSubmitting || !selectedResult
-              ? 'bg-slate-400 cursor-not-allowed'
-              : 'bg-emerald-600 hover:bg-emerald-700'
-          }`}
-        >
-          {isSubmitting ? '⏳ Enviando...' : '✅ Registrar Visita'}
-        </button>
+        </Secao>
       </div>
-    </div>
+
+      {/* Barra de envio fixa, acima da área segura */}
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card/95 backdrop-blur">
+        <div className="mx-auto max-w-2xl space-y-2 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3">
+          {erroForm && (
+            <p role="alert" className="rounded-lg bg-danger-soft px-3 py-2 text-sm font-medium text-danger-text">
+              {erroForm}
+            </p>
+          )}
+          <Button tamanho="lg" cheio onClick={registrar} disabled={enviando}>
+            {enviando && <Loader2 aria-hidden="true" className="size-5 animate-spin" />}
+            {enviando ? 'Registrando…' : 'Registrar visita'}
+          </Button>
+        </div>
+      </div>
+    </>
   );
 }
