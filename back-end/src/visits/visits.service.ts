@@ -1,10 +1,11 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { Visit } from '../types';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma } from '../generated/prisma/client';
 import { resultToDb, toVisit } from '../prisma/mappers';
 import { pontosDeAquisicao } from './pontuacao';
 import { registrarRecorrencia } from '../purchases/recorrencia';
+import { MENSAGEM_META_BATIDA, metaBatidaPorCompras } from '../purchases/ciclo';
 
 // `compra` é opcional e só vale quando o resultado da visita é "compra".
 type CreateInput = Omit<Visit, 'id' | 'createdAt' | 'pontosGerados' | 'anuladaEm' | 'motivoAnulacao'> & {
@@ -29,6 +30,12 @@ export class VisitsService {
     }
 
     return this.prisma.$transaction(async (tx) => {
+      const compras = await tx.purchase.findMany({
+        where: { establishmentId: data.establishmentId },
+        orderBy: { data: 'asc' },
+        select: { data: true, autonoma: true },
+      });
+      if (metaBatidaPorCompras(compras)) throw new ConflictException(MENSAGEM_META_BATIDA);
       const row = await tx.visit.create({
         data: {
           establishmentId: data.establishmentId,

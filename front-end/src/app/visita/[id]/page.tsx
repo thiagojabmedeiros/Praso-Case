@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Establishment, Turno, Visit, VisitResult } from '@/lib/types';
-import { establishmentsAPI, visitsAPI } from '@/lib/api';
+import { establishmentsAPI, followupsAPI, visitsAPI } from '@/lib/api';
 
 const visitResults: { value: VisitResult; label: string; emoji: string }[] = [
   { value: 'cadastrou', label: 'Cadastrou', emoji: '✅' },
@@ -26,6 +26,7 @@ export default function VisitaPage() {
   const [proximoContato, setProximoContato] = useState('');
   const [valorCompra, setValorCompra] = useState('');
   const [melhorTurno, setMelhorTurno] = useState<Turno | null>(null);
+  const [bloqueado, setBloqueado] = useState(false);
   const [compraAutonoma, setCompraAutonoma] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [useVoice, setUseVoice] = useState(false);
@@ -43,6 +44,14 @@ export default function VisitaPage() {
       }
     }
     load();
+  }, [params.id]);
+
+  // Cliente que já bateu a meta de recorrência não recebe mais visitas.
+  useEffect(() => {
+    followupsAPI
+      .getByEstablishment(params.id)
+      .then((f) => setBloqueado(Boolean(f?.metaBatida)))
+      .catch(() => setBloqueado(false));
   }, [params.id]);
 
   const startVoiceNote = () => {
@@ -112,6 +121,24 @@ export default function VisitaPage() {
     return (
       <div className="min-h-screen bg-slate-50 p-4 flex items-center justify-center">
         <p className="text-slate-600">Carregando...</p>
+      </div>
+    );
+  }
+
+  if (bloqueado) {
+    return (
+      <div className="min-h-screen bg-slate-50 p-4">
+        <div className="max-w-2xl mx-auto space-y-4">
+          <Link href="/carteira" className="text-sm text-blue-600 hover:underline inline-block">
+            ← Voltar para carteira
+          </Link>
+          <div className="bg-emerald-50 border border-emerald-200 text-emerald-900 p-4 rounded-lg">
+            <h1 className="font-semibold text-lg">🏆 {establishment?.nomeFantasia ?? 'Cliente'} já bateu a meta</h1>
+            <p className="text-sm mt-1">
+              Três compras autônomas registradas. Visitas e compras estão bloqueadas para este cliente.
+            </p>
+          </div>
+        </div>
       </div>
     );
   }

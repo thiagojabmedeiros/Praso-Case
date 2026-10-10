@@ -1,8 +1,9 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { Purchase } from '../types';
 import { PrismaService } from '../prisma/prisma.service';
 import { toPurchase } from '../prisma/mappers';
 import { registrarRecorrencia } from './recorrencia';
+import { MENSAGEM_META_BATIDA, metaBatidaPorCompras } from './ciclo';
 
 type CreateInput = Omit<Purchase, 'id' | 'createdAt'>;
 
@@ -16,6 +17,12 @@ export class PurchasesService {
     }
 
     return this.prisma.$transaction(async (tx) => {
+      const compras = await tx.purchase.findMany({
+        where: { establishmentId: data.establishmentId },
+        orderBy: { data: 'asc' },
+        select: { data: true, autonoma: true },
+      });
+      if (metaBatidaPorCompras(compras)) throw new ConflictException(MENSAGEM_META_BATIDA);
       const row = await tx.purchase.create({
         data: {
           establishmentId: data.establishmentId,

@@ -56,6 +56,8 @@ export class RecommendationsService {
       .map((row) => {
         const establishment = toEstablishment(row);
         const followup = followupPorEst.get(row.id);
+        // Clientes com meta batida não entram mais na lista do dia.
+        if (followup?.metaBatida) return null;
         const ultima = ultimaVisita.get(row.id);
         const temCoordenadas = row.latitude !== null && row.longitude !== null;
         const distanciaKm =
@@ -81,6 +83,7 @@ export class RecommendationsService {
         );
         return { establishment, score, motivos };
       })
+      .filter((r): r is Recomendacao => r !== null)
       .sort((a, b) => b.score - a.score);
   }
 }

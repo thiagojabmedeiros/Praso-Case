@@ -35,3 +35,10 @@ export function cicloAtual(comprasAsc: CompraCiclo[]) {
 
   return { inicio, autonomasCiclo, metaAlcancada };
 }
+
+/** Meta de recorrência batida em algum ciclo: o cliente não recebe mais visitas nem compras. */
+export function metaBatidaPorCompras(comprasAsc: CompraCiclo[]): boolean {
+  return comprasAsc.length > 0 && cicloAtual(comprasAsc).metaAlcancada;
+}
+
+export const MENSAGEM_META_BATIDA = 'Cliente já bateu a meta de recorrência: visitas e compras estão bloqueadas';
