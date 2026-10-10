@@ -315,7 +315,7 @@ export function Skeleton({ className }: { className?: string }) {
 /** Lista de cartões esqueleto: reserva espaço enquanto carrega, evitando salto de layout. */
 export function ListaSkeleton({ itens = 3, altura = 'h-44' }: { itens?: number; altura?: string }) {
   return (
-    <div className="space-y-3 p-4 lg:max-w-4xl lg:space-y-4 lg:p-8" role="status" aria-label="Carregando">
+    <div className="space-y-3 p-4 lg:space-y-4 lg:p-8" role="status" aria-label="Carregando">
       {Array.from({ length: itens }).map((_, i) => (
         <Skeleton key={i} className={altura} />
       ))}

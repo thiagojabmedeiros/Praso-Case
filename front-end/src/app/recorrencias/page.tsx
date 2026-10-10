@@ -140,13 +140,13 @@ export default function RecorrenciasPage() {
 
       {!carregando && itens.length > 0 && (
         <div className="space-y-4 p-4 lg:p-8">
-          <div className="grid grid-cols-3 gap-2 lg:max-w-4xl">
+          <div className="grid grid-cols-3 gap-2">
             <StatTile valor={emAndamento} rotulo="Em andamento" tom="primary" />
             <StatTile valor={urgentes} rotulo="Urgentes" tom="danger" />
             <StatTile valor={metas} rotulo="Metas batidas" tom="success" />
           </div>
 
-          <ul className="space-y-3 lg:max-w-4xl lg:space-y-4">
+          <ul className="space-y-3 lg:space-y-4">
             {/* Já visitados hoje descem para o fim; a ordem de urgência se mantém dentro de cada grupo. */}
             {[...itens]
               .sort((a, b) => Number(visitadosHoje.has(a.establishmentId)) - Number(visitadosHoje.has(b.establishmentId)))
@@ -163,7 +163,15 @@ export default function RecorrenciasPage() {
 
               return (
                 <li key={item.establishmentId} className="animate-fade-up" style={{ animationDelay: `${Math.min(i, 5) * 45}ms` }}>
-                  <Card solido={item.metaBatida} className={cn('space-y-3', item.metaBatida && 'border-success/40 bg-success-soft/40')}>
+                  <Card
+                    solido={item.metaBatida}
+                    className={cn(
+                      'space-y-3 lg:flex lg:items-center lg:gap-8 lg:space-y-0',
+                      item.metaBatida && 'border-success/40 bg-success-soft/40',
+                    )}
+                  >
+                    {/* Zona de informações: no desktop ocupa o espaço que sobra à esquerda */}
+                    <div className="min-w-0 space-y-3 lg:flex-1">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <Link href={`/cliente/${item.establishmentId}`} className="block">
@@ -213,9 +221,11 @@ export default function RecorrenciasPage() {
                       )}
                     </dl>
 
-                    {/* Ações: cliente que bateu a meta não recebe mais visitas */}
+                    </div>
+
+                    {/* Ações: cliente que bateu a meta não recebe mais visitas. No desktop, coluna de largura fixa à direita. */}
                     {!item.metaBatida && (
-                      <div className="grid grid-cols-2 gap-2 pt-1">
+                      <div className="grid grid-cols-2 gap-2 pt-1 lg:w-80 lg:shrink-0 lg:pt-0">
                         {visitadosHoje.has(item.establishmentId) ? (
                           <span
                             aria-disabled="true"

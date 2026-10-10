@@ -280,7 +280,7 @@ export default function HojePage() {
           )}
 
           {semLocalizacao && (
-            <p className="flex items-center gap-2 rounded-xl bg-muted px-3 py-2 text-sm text-muted-foreground lg:max-w-4xl">
+            <p className="flex items-center gap-2 rounded-xl bg-muted px-3 py-2 text-sm text-muted-foreground">
               <MapPinOff aria-hidden="true" className="size-4 shrink-0" />
               Sem acesso à sua localização: a distância não entra na ordem da lista.
             </p>
@@ -317,7 +317,7 @@ export default function HojePage() {
             </div>
           )}
 
-          <ol className="space-y-3 lg:max-w-4xl lg:space-y-4">
+          <ol className="space-y-3 lg:space-y-4">
             {listaFiltrada.map(({ establishment: est, score, motivos, visitadoHoje }, i) => {
               const status = STATUS[est.status] ?? STATUS.churn;
               const prioridade = Math.round(score * 100);
@@ -330,7 +330,9 @@ export default function HojePage() {
 
               return (
                 <li key={est.id} className="animate-fade-up" style={{ animationDelay: `${Math.min(i, 5) * 45}ms` }}>
-                  <Card className="space-y-3">
+                  <Card className="space-y-3 lg:flex lg:items-center lg:gap-8 lg:space-y-0">
+                    {/* Zona de informações: no desktop ocupa o espaço que sobra à esquerda */}
+                    <div className="min-w-0 space-y-3 lg:flex-1">
                     <div className="flex items-start gap-3">
                       {visitadoHoje ? (
                         <span
@@ -413,8 +415,11 @@ export default function HojePage() {
                     </>
                     )}
 
-                    {/* Ações: visitado hoje mostra o resumo do que foi feito; contato e rotas seguem disponíveis */}
-                    <div className="space-y-2 pt-1">
+                    </div>
+
+                    {/* Zona de ações: no desktop é uma coluna de largura fixa, com uma ação principal e as secundárias abaixo.
+                        Visitado hoje mostra o resumo do que foi feito; contato e rotas seguem disponíveis. */}
+                    <div className="space-y-2 pt-1 lg:w-80 lg:shrink-0 lg:pt-0">
                       {visitadoHoje ? (
                         <>
                           <p className="flex items-center gap-1.5 text-xs font-semibold text-success-text">
