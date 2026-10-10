@@ -166,7 +166,7 @@ export default function HojePage() {
           )}
 
           <ol className="space-y-3">
-            {lista.map(({ establishment: est, score, motivos }, i) => {
+            {lista.map(({ establishment: est, score, motivos, visitadoHoje }, i) => {
               const status = STATUS[est.status] ?? STATUS.churn;
               const prioridade = Math.round(score * 100);
               const horario = est.melhorHorario
@@ -235,11 +235,24 @@ export default function HojePage() {
                       </ul>
                     )}
 
-                    {/* Ações */}
+                    {/* Ações: visitado hoje mostra o resumo do que foi feito; contato e rotas seguem disponíveis */}
                     <div className="space-y-2 pt-1">
-                      <ButtonLink href={`/visita/${est.id}`} tamanho="lg" cheio>
-                        Iniciar visita
-                      </ButtonLink>
+                      {visitadoHoje ? (
+                        <>
+                          <p className="flex items-center gap-1.5 text-xs font-semibold text-success-text">
+                            <CalendarCheck2 aria-hidden="true" className="size-3.5" />
+                            Visita registrada hoje
+                          </p>
+                          <ButtonLink href={`/hoje/visitado/${est.id}`} variante="outline" tamanho="lg" cheio>
+                            <FileText aria-hidden="true" className="size-4" />
+                            Ver o que foi feito hoje
+                          </ButtonLink>
+                        </>
+                      ) : (
+                        <ButtonLink href={`/visita/${est.id}`} tamanho="lg" cheio>
+                          Iniciar visita
+                        </ButtonLink>
+                      )}
                       <div className="grid grid-cols-3 gap-2">
                         {est.telefone ? (
                           <a
