@@ -2,14 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { FollowUp, Purchase } from '../types';
 import { PrismaService } from '../prisma/prisma.service';
 import { toPurchase } from '../prisma/mappers';
+import { COMPRAS_PARA_RECORRENCIA, cicloAtual, fimDaJanela } from '../purchases/ciclo';
 
-const JANELA_DIAS = 45;
-const COMPRAS_PARA_RECORRENCIA = 3;
+
+const DIA_MS = 24 * 60 * 60 * 1000;
 
 /**
- * Calcula o acompanhamento de um estabelecimento a partir das suas compras.
- * `purchases` deve vir ordenado por data, da mais recente para a mais antiga.
- * Retorna undefined se não houve compra ou se o cliente já atingiu a recorrência.
+ * Acompanhamento de um estabelecimento a partir das suas compras.
+ * `purchases` vem da mais recente para a mais antiga. Retorna undefined se não houve compra.
  */
 function buildFollowUp(
   establishmentId: string,
@@ -19,15 +19,10 @@ function buildFollowUp(
 ): FollowUp | undefined {
   if (purchases.length === 0) return undefined;
 
-  const autonomas = purchases.filter((p) => p.autonoma).length;
+  const { inicio, autonomasCiclo, metaAlcancada } = cicloAtual([...purchases].reverse());
+  const proximoDeadline = fimDaJanela(inicio);
 
-  const primeiraCompra = purchases[purchases.length - 1];
-  const proximoDeadline = new Date(primeiraCompra.data);
-  proximoDeadline.setDate(proximoDeadline.getDate() + JANELA_DIAS);
-
-  const diasRestantes = Math.ceil(
-    (proximoDeadline.getTime() - agora.getTime()) / (1000 * 60 * 60 * 24),
-  );
+  const diasRestantes = Math.ceil((proximoDeadline.getTime() - agora.getTime()) / DIA_MS);
 
   let urgencia: FollowUp['urgencia'];
   if (diasRestantes < 0) {
@@ -38,17 +33,19 @@ function buildFollowUp(
     urgencia = 'normal';
   }
 
+  const comprasAte = metaAlcancada ? COMPRAS_PARA_RECORRENCIA : autonomasCiclo;
+
   return {
     establishmentId,
     vendedorId,
-    primeiraCompraData: primeiraCompra.data,
+    primeiraCompraData: inicio,
     ultimaCompraData: purchases[0].data,
     proximoDeadline,
-    comprasAte: autonomas,
-    faltam: Math.max(0, COMPRAS_PARA_RECORRENCIA - autonomas),
+    comprasAte,
+    faltam: Math.max(0, COMPRAS_PARA_RECORRENCIA - comprasAte),
     diasRestantes,
     urgencia,
-    metaBatida: autonomas >= COMPRAS_PARA_RECORRENCIA,
+    metaBatida: metaAlcancada,
   };
 }
 
