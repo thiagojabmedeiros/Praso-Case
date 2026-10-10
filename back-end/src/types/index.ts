@@ -79,4 +79,5 @@ export interface FollowUp {
   diasRestantes: number;
   urgencia: 'vencida' | 'critica' | 'normal'; // calculado
   metaBatida: boolean; // 3 compras autônomas: cliente recorrente, sai da prioridade
+  proximaPendencia: Date | null; // venda + 15 dias, ou data de retorno combinada na última visita
 }

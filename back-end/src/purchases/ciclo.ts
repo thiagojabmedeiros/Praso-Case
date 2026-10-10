@@ -1,4 +1,4 @@
-export const JANELA_DIAS = 45;
+export const JANELA_DIAS = 15; // prazo renovado a cada venda
 export const COMPRAS_PARA_RECORRENCIA = 3;
 
 export interface CompraCiclo {
@@ -13,27 +13,29 @@ export function fimDaJanela(inicio: Date): Date {
 }
 
 /**
- * Divide as compras em ciclos de 45 dias. O ciclo começa na 1ª compra; quando a janela
- * vence, a próxima compra abre um novo ciclo. Assim o prazo é recalculado após uma venda
- * feita depois do vencimento. Se algum ciclo chegou a 3 compras autônomas, a meta foi batida.
+ * Divide as compras em ciclos. Cada venda renova a janela de 15 dias: a próxima venda precisa
+ * acontecer até 15 dias depois da última. Se o intervalo passar disso, um novo ciclo começa na
+ * venda seguinte. Se algum ciclo chegou a 3 compras autônomas, a meta foi batida.
  * `comprasAsc` deve vir da mais antiga para a mais recente.
  */
 export function cicloAtual(comprasAsc: CompraCiclo[]) {
   let inicio = comprasAsc[0].data;
+  let ultima = inicio;
   let autonomasCiclo = 0;
   let metaAlcancada = false;
 
   for (const p of comprasAsc) {
-    if (p.data > fimDaJanela(inicio)) {
+    if (p.data > fimDaJanela(ultima)) {
       if (autonomasCiclo >= COMPRAS_PARA_RECORRENCIA) metaAlcancada = true;
       inicio = p.data;
       autonomasCiclo = 0;
     }
     if (p.autonoma) autonomasCiclo++;
+    ultima = p.data;
   }
   if (autonomasCiclo >= COMPRAS_PARA_RECORRENCIA) metaAlcancada = true;
 
-  return { inicio, autonomasCiclo, metaAlcancada };
+  return { inicio, ultima, autonomasCiclo, metaAlcancada };
 }
 
 /** Meta de recorrência batida em algum ciclo: o cliente não recebe mais visitas nem compras. */

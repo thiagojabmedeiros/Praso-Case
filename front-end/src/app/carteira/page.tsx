@@ -168,6 +168,11 @@ export default function CarteiraPage() {
                 <div className="mb-3 text-xs text-slate-600">
                   <p>1ª compra: {new Date(followup.primeiraCompraData).toLocaleDateString('pt-BR')}</p>
                   <p>Última compra: {new Date(followup.ultimaCompraData).toLocaleDateString('pt-BR')}</p>
+                  {followup.proximaPendencia && (
+                    <p className={new Date(followup.proximaPendencia) < new Date() ? 'text-red-700 font-medium' : ''}>
+                      📅 Próxima pendência: {new Date(followup.proximaPendencia).toLocaleDateString('pt-BR')}
+                    </p>
+                  )}
                 </div>
 
                 {/* Actions */}

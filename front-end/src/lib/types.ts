@@ -72,6 +72,7 @@ export interface FollowUp {
   diasRestantes: number;
   urgencia: 'vencida' | 'critica' | 'normal';
   metaBatida?: boolean;
+  proximaPendencia?: string | null;
 }
 
 export interface Seller {
