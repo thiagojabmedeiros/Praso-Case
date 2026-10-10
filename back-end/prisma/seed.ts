@@ -39,6 +39,10 @@ const establishments = [
   },
   {
     id: 'est-betos-bar',
+    status: 'cliente' as const,
+    latitude: -8.1956635,
+    longitude: -34.9193481,
+    geocodePrecisao: 'poi',
     fornecedorAtual: null,
     melhorHorario: '19:00',
     potencial: 'alto' as const,
@@ -72,6 +76,7 @@ const establishments = [
   },
   {
     id: 'est-du-maranhao',
+    status: 'cliente' as const,
     latitude: -8.198344350541936,
     longitude: -34.91830598650777,
     geocodePrecisao: 'manual',
@@ -90,6 +95,10 @@ const establishments = [
   },
   {
     id: 'est-costa-pizzaria',
+    status: 'cliente' as const,
+    latitude: -8.2081606,
+    longitude: -34.9270905,
+    geocodePrecisao: 'poi',
     fornecedorAtual: 'Distribuidora Teste A',
     melhorHorario: '18:30',
     potencial: 'normal' as const,
@@ -123,6 +132,9 @@ const establishments = [
   },
   {
     id: 'est-atlantico-piedade',
+    latitude: -8.1609071,
+    longitude: -34.9135021,
+    geocodePrecisao: 'poi',
     fornecedorAtual: null,
     melhorHorario: '14:30',
     potencial: 'baixo' as const,
@@ -244,7 +256,7 @@ async function main() {
     await prisma.establishment.upsert({
       where: { id: e.id },
       update: e,
-      create: { ...e, status: 'lead', score: 0, vendedorId: 'seller-1' },
+      create: { ...e, score: 0, vendedorId: 'seller-1' },
     });
   }
   for (const p of purchases) {
