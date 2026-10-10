@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Purchase } from '../types';
 import { PrismaService } from '../prisma/prisma.service';
 import { toPurchase } from '../prisma/mappers';
@@ -11,6 +11,10 @@ export class PurchasesService {
   constructor(private prisma: PrismaService) {}
 
   async create(data: CreateInput): Promise<Purchase> {
+    if (!(data.valor > 0)) {
+      throw new BadRequestException('O valor da compra deve ser maior que zero');
+    }
+
     return this.prisma.$transaction(async (tx) => {
       const row = await tx.purchase.create({
         data: {

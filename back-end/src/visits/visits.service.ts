@@ -23,6 +23,11 @@ export class VisitsService {
    * Os pontos são guardados na visita, para poderem ser desfeitos numa anulação.
    */
   async create(data: CreateInput): Promise<Visit> {
+    // Visita de compra só existe com uma compra de valor positivo: nunca gravamos compra de R$ 0.
+    if (data.resultado === 'compra' && !(data.compra && data.compra.valor > 0)) {
+      throw new BadRequestException('Informe o valor da compra (maior que zero)');
+    }
+
     return this.prisma.$transaction(async (tx) => {
       const row = await tx.visit.create({
         data: {
