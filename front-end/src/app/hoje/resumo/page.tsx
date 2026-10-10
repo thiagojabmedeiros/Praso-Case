@@ -198,20 +198,14 @@ export default function ResumoDoDiaPage() {
               : '.'}
           </p>
 
-          <div className="space-y-2">
-            <div className="grid grid-cols-2 gap-2">
-              <StatTile valor={totais.jaVisitados} rotulo="Já visitados" tom="primary" />
-              <StatTile valor={totais.pendentes} rotulo="Pendentes" tom="warning" />
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              <StatTile valor={totais.cadastros} rotulo="Cadastros" tom="primary" />
-              <StatTile
-                valor={totais.compras ? moedaCompacta(totais.valorCompras) : '—'}
-                rotulo={`Compras (${totais.compras})`}
-                tom="success"
-              />
-              <StatTile valor={totais.recusados} rotulo="Recusados" tom={totais.recusados > 0 ? 'danger' : 'neutral'} />
-            </div>
+          <div className="grid grid-cols-3 gap-2">
+            <StatTile valor={totais.jaVisitados} rotulo="Já visitados" tom="primary" />
+            <StatTile valor={totais.pendentes} rotulo="Pendentes" tom="warning" />
+            <StatTile
+              valor={totais.compras ? moedaCompacta(totais.valorCompras) : '—'}
+              rotulo={`Compras (${totais.compras})`}
+              tom="success"
+            />
           </div>
 
           <Card className="animate-fade-up space-y-3" style={{ animationDelay: '80ms' }}>
