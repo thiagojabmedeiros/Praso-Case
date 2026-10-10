@@ -281,9 +281,9 @@ PATCH /sellers/:id/score
 - [x] Frontend: 5 telas, integração com API, PWA
 - [x] Playbook: "um dia na vida" detalhado
 - [x] Diário de bordo: decisões, tempo, aprendizados
-- [ ] Pesquisa de campo: visitas reais, documentação
-- [ ] Deploy: Vercel + Render/Railway, teste no celular
-- [ ] Teste E2E: abrir app → carteira → visita → check-in → refletir em acompanhamento
+- [ ] Pesquisa de campo: visitas reais, documentação (roteiro e registro em `CAMPO.md`)
+- [x] Deploy: Vercel + Render/Railway, teste no celular
+- [x] Teste E2E: abrir app → carteira → visita → check-in → refletir em acompanhamento
 
 ---
 
