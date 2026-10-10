@@ -146,7 +146,7 @@ export default function VisitaPage() {
             <p>
               <span className="text-slate-600">Telefone:</span>{' '}
               {establishment.telefone ? (
-                <a href={`tel:${establishment.telefone.replace(/D/g, '')}`} className="font-medium text-blue-600">
+                <a href={`tel:${establishment.telefone.replace(/[^0-9]/g, '')}`} className="font-medium text-blue-600">
                   {establishment.telefone}
                 </a>
               ) : (
