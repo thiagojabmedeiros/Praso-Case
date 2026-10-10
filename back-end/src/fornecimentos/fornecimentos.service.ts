@@ -8,6 +8,7 @@ export interface FornecimentoView {
   id: string;
   categoria: CategoriaFornecimentoInput;
   distribuidora: { id: string; nome: string };
+  visitId: string | null;
 }
 
 const include = { distribuidora: { select: { id: true, nome: true } } } as const;
@@ -16,8 +17,9 @@ function toView(row: {
   id: string;
   categoria: CategoriaFornecimentoInput;
   distribuidora: { id: string; nome: string };
+  visitId: string | null;
 }): FornecimentoView {
-  return { id: row.id, categoria: row.categoria, distribuidora: row.distribuidora };
+  return { id: row.id, categoria: row.categoria, distribuidora: row.distribuidora, visitId: row.visitId };
 }
 
 @Injectable()

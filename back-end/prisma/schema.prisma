@@ -108,6 +108,8 @@ model Fornecimento {
   establishmentId String
   distribuidoraId String
   categoria       CategoriaFornecimento
+  // Visita em que este fornecimento foi cadastrado (null quando cadastrado fora de uma visita)
+  visitId         String?
   createdAt       DateTime              @default(now())
 
   establishment Establishment @relation(fields: [establishmentId], references: [id], onDelete: Cascade)
@@ -115,6 +117,7 @@ model Fornecimento {
 
   @@unique([establishmentId, distribuidoraId, categoria])
   @@index([establishmentId])
+  @@index([visitId])
   @@map("fornecimentos")
 }
 

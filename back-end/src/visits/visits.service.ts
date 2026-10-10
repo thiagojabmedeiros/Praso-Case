@@ -6,10 +6,13 @@ import { resultToDb, toVisit } from '../prisma/mappers';
 import { pontosDeAquisicao } from './pontuacao';
 import { registrarRecorrencia } from '../purchases/recorrencia';
 import { MENSAGEM_META_BATIDA, metaBatidaPorCompras } from '../purchases/ciclo';
+import { CATEGORIAS, type CategoriaFornecimentoInput } from '../fornecimentos/fornecimentos.service';
 
 // `compra` é opcional e só vale quando o resultado da visita é "compra".
 export type CreateInput = Omit<Visit, 'id' | 'createdAt' | 'pontosGerados' | 'anuladaEm' | 'motivoAnulacao' | 'compra'> & {
   compra?: { valor: number; autonoma: boolean };
+  // Fornecedores cadastrados nesta visita. Só são gravados junto com a visita (mesma transação).
+  fornecimentos?: { distribuidora: string; categoria: string }[];
 };
 
 @Injectable()
@@ -51,6 +54,35 @@ export class VisitsService {
           melhorTurno: data.melhorTurno ?? null,
         },
       });
+
+      // Fornecedores da visita: criados aqui, ligados a ela. Se algo falhar, a visita inteira é desfeita.
+      for (const f of data.fornecimentos ?? []) {
+        const nome = (f.distribuidora ?? '').trim();
+        if (!nome) throw new BadRequestException('Informe o nome da distribuidora');
+        if (!(CATEGORIAS as readonly string[]).includes(f.categoria)) {
+          throw new BadRequestException('Categoria de fornecedor inválida');
+        }
+        const categoria = f.categoria as CategoriaFornecimentoInput;
+        const existente = await tx.distribuidora.findFirst({
+          where: { nome: { equals: nome, mode: 'insensitive' } },
+        });
+        const distribuidora = existente ?? (await tx.distribuidora.create({ data: { nome } }));
+        // Se o fornecimento já existia, não é cadastro desta visita: não é ligado a ela.
+        const ja = await tx.fornecimento.findUnique({
+          where: {
+            establishmentId_distribuidoraId_categoria: {
+              establishmentId: data.establishmentId,
+              distribuidoraId: distribuidora.id,
+              categoria,
+            },
+          },
+        });
+        if (!ja) {
+          await tx.fornecimento.create({
+            data: { establishmentId: data.establishmentId, distribuidoraId: distribuidora.id, categoria, visitId: row.id },
+          });
+        }
+      }
 
       let pontos = 0;
       // O turno informado na visita vale para o estabelecimento até a próxima informação.
