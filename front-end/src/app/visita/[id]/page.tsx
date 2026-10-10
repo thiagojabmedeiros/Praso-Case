@@ -235,13 +235,13 @@ export default function VisitaPage() {
       <>
         <PageHeader
           titulo={establishment.nomeFantasia}
-          voltar={{ href: '/carteira', rotulo: 'Voltar para a carteira' }}
+          voltar={{ href: '/recorrencias', rotulo: 'Voltar para recorrências' }}
         />
         <EmptyState
           icone={<Trophy aria-hidden="true" className="size-8 text-success-text" />}
           titulo="Meta de recorrência batida"
           descricao="Este cliente já fez as três compras autônomas. Visitas e compras estão bloqueadas."
-          acao={<ButtonLink href="/carteira">Voltar para a carteira</ButtonLink>}
+          acao={<ButtonLink href="/recorrencias">Voltar para recorrências</ButtonLink>}
         />
       </>
     );

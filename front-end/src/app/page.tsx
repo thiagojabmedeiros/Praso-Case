@@ -103,7 +103,7 @@ export default function Home() {
             </Card>
           </Link>
 
-          <Link href="/carteira" className="group block">
+          <Link href="/recorrencias" className="group block">
             <Card interativo className="flex items-center gap-4">
               <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-success-soft text-success-text">
                 <Target aria-hidden="true" className="size-6" />

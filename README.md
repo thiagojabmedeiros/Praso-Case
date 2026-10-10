@@ -42,7 +42,7 @@ Rotas:
 - `/` — menu principal
 - `/hoje` — carteira do dia (leads/oportunidades)
 - `/visita/[id]` — pré-visita + check-in GPS + voz
-- `/carteira` — acompanhamento de recorrência (3ª compra em 45 dias)
+- `/recorrencias` — acompanhamento de recorrência (3ª compra em 45 dias)
 - `/cliente/[id]` — histórico de visitas e compras
 
 ## 🎯 Arquitetura
@@ -139,7 +139,7 @@ cd front-end && npm run dev
 3. Ver cartão de contexto
 4. Clicar "Registrar Visita" (escolher resultado + nota)
 5. Voltar à `/hoje`
-6. Abrir `/carteira`
+6. Abrir `/recorrencias`
 7. Ver clientes em acompanhamento (com dias + progresso)
 
 ## 📱 PWA
@@ -152,7 +152,7 @@ App pode ser instalada no celular (Chrome/Android):
 
 Shortcuts:
 - "Carteira do Dia" → `/hoje`
-- "Acompanhamento" → `/carteira`
+- "Recorrências" → `/recorrencias`
 
 ## 🚢 Deploy (Próximos Passos)
 

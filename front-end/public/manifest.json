@@ -46,9 +46,9 @@
     },
     {
       "name": "Recorrência",
-      "short_name": "Carteira",
+      "short_name": "Recorrências",
       "description": "Clientes em acompanhamento de recorrência",
-      "url": "/carteira",
+      "url": "/recorrencias",
       "icons": [
         {
           "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><rect fill='%232563eb' width='96' height='96'/><text x='48' y='65.28' font-size='52.800000000000004' font-weight='800' font-family='sans-serif' fill='white' text-anchor='middle'>P</text></svg>",

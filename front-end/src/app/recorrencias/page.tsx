@@ -72,7 +72,7 @@ function Etapas({ feitas, tom, atraso = 0 }: { feitas: number; tom: string; atra
   );
 }
 
-export default function CarteiraPage() {
+export default function RecorrenciasPage() {
   const [itens, setItens] = useState<Item[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
@@ -94,7 +94,7 @@ export default function CarteiraPage() {
         );
         setItens(enriquecidos);
       } catch (err) {
-        setErro(err instanceof Error ? err.message : 'Erro ao carregar carteira');
+        setErro(err instanceof Error ? err.message : 'Erro ao carregar recorrências');
       } finally {
         setCarregando(false);
       }

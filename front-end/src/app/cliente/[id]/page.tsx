@@ -90,7 +90,7 @@ export default function ClientePage() {
   if (carregando) {
     return (
       <>
-        <PageHeader titulo="Cliente" voltar={{ href: '/carteira', rotulo: 'Voltar para a carteira' }} />
+        <PageHeader titulo="Cliente" voltar={{ href: '/recorrencias', rotulo: 'Voltar para recorrências' }} />
         <ListaSkeleton itens={3} altura="h-40" />
       </>
     );
@@ -99,7 +99,7 @@ export default function ClientePage() {
   if (erro || !establishment) {
     return (
       <>
-        <PageHeader titulo="Cliente" voltar={{ href: '/carteira', rotulo: 'Voltar para a carteira' }} />
+        <PageHeader titulo="Cliente" voltar={{ href: '/recorrencias', rotulo: 'Voltar para recorrências' }} />
         <ErroAviso mensagem={erro || 'Cliente não encontrado.'} />
       </>
     );
@@ -112,7 +112,7 @@ export default function ClientePage() {
       <PageHeader
         titulo={establishment.nomeFantasia}
         subtitulo={establishment.razaoSocial ?? undefined}
-        voltar={{ href: '/carteira', rotulo: 'Voltar para a carteira' }}
+        voltar={{ href: '/recorrencias', rotulo: 'Voltar para recorrências' }}
         acao={<Badge tom={status.tom}>{status.rotulo}</Badge>}
       />
 

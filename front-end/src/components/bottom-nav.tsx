@@ -7,7 +7,7 @@ import { CalendarCheck, LayoutDashboard, Target } from 'lucide-react';
 const ABAS = [
   { href: '/', label: 'Início', Icone: LayoutDashboard },
   { href: '/hoje', label: 'Hoje', Icone: CalendarCheck },
-  { href: '/carteira', label: 'Carteira', Icone: Target },
+  { href: '/recorrencias', label: 'Recorrências', Icone: Target },
 ];
 
 /** Navegação inferior com 3 destinos. Some nas telas de trabalho (visita e cliente), que têm barra própria. */
