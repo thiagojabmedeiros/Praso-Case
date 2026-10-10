@@ -31,6 +31,9 @@ const RESULTADO: Record<VisitResult, { rotulo: string; tom: Tom }> = {
 };
 
 const moeda = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+// Versão curta para o card (ex.: R$ 12,3 mil), para caber em três colunas.
+const moedaCompacta = (v: number) =>
+  v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', notation: 'compact', maximumFractionDigits: 1 });
 const diaDe = (iso: string) => new Intl.DateTimeFormat('en-CA', { timeZone: FUSO }).format(new Date(iso));
 const horaDe = (iso: string) =>
   new Date(iso).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: FUSO });
@@ -46,7 +49,7 @@ interface Linha {
 function montarTexto(data: string, linhas: Linha[], totais: Totais): string {
   const cabecalho = [
     `Resumo do dia — ${new Date(`${data}T12:00:00`).toLocaleDateString('pt-BR')}`,
-    `Já visitados: ${totais.jaVisitados} · Pendentes: ${totais.pendentes} · Cadastros: ${totais.cadastros} · Compras: ${totais.compras}${totais.compras ? ` (${moeda(totais.valorCompras)})` : ''} · Acompanhar: ${totais.acompanhar}`,
+    `Já visitados: ${totais.jaVisitados} · Pendentes: ${totais.pendentes} · Cadastros: ${totais.cadastros} · Compras: ${totais.compras}${totais.compras ? ` (${moeda(totais.valorCompras)})` : ''} · Recusados: ${totais.recusados} · Acompanhar: ${totais.acompanhar}`,
   ];
   const corpo = linhas.map(({ estabelecimento: est, visitas }, i) => {
     const acoes = visitas.map((v) => {
@@ -67,6 +70,7 @@ function montarTexto(data: string, linhas: Linha[], totais: Totais): string {
 interface Totais {
   jaVisitados: number;
   pendentes: number;
+  recusados: number;
   cadastros: number;
   compras: number;
   valorCompras: number;
@@ -133,6 +137,7 @@ export default function ResumoDoDiaPage() {
     return {
       jaVisitados: recomendacoes.filter((r) => r.visitadoHoje).length,
       pendentes: recomendacoes.filter((r) => !r.visitadoHoje).length,
+      recusados: doDia.filter((v) => v.resultado === 'recusou').length,
       cadastros: doDia.filter((v) => v.resultado === 'cadastrou').length,
       compras: compras.length,
       valorCompras: compras.reduce((soma, v) => soma + (v.compra?.valor ?? 0), 0),
@@ -171,11 +176,20 @@ export default function ResumoDoDiaPage() {
 
       {!carregando && !erro && linhas.length > 0 && (
         <div className="space-y-4 p-4">
-          <div className="grid grid-cols-2 gap-2">
-            <StatTile valor={totais.jaVisitados} rotulo="Já visitados" tom="primary" />
-            <StatTile valor={totais.pendentes} rotulo="Pendentes" tom="warning" />
-            <StatTile valor={totais.cadastros} rotulo="Cadastros" tom="success" />
-            <StatTile valor={totais.compras ? moeda(totais.valorCompras) : '—'} rotulo={`Compras (${totais.compras})`} tom="success" />
+          <div className="space-y-2">
+            <div className="grid grid-cols-2 gap-2">
+              <StatTile valor={totais.jaVisitados} rotulo="Já visitados" tom="primary" />
+              <StatTile valor={totais.pendentes} rotulo="Pendentes" tom="warning" />
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <StatTile valor={totais.cadastros} rotulo="Cadastros" tom="success" />
+              <StatTile
+                valor={totais.compras ? moedaCompacta(totais.valorCompras) : '—'}
+                rotulo={`Compras (${totais.compras})`}
+                tom="success"
+              />
+              <StatTile valor={totais.recusados} rotulo="Recusados" tom="danger" />
+            </div>
           </div>
 
           <Button variante="outline" cheio onClick={copiarResumo}>
