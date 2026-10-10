@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { FollowUp, Establishment } from '@/lib/types';
-import { followupsAPI, establishmentsAPI, purchasesAPI } from '@/lib/api';
+import { followupsAPI, establishmentsAPI } from '@/lib/api';
 
 const urgencyColor = {
   vencida: 'bg-red-100 text-red-800 border-red-300',
@@ -49,26 +49,9 @@ export default function CarteiraPage() {
     load();
   }, []);
 
-  const handleQuickAction = async (followup: FollowUp, action: 'contact' | 'purchase') => {
-    try {
-      if (action === 'purchase') {
-        // Simula registro de compra autônoma
-        await purchasesAPI.create({
-          establishmentId: followup.establishmentId,
-          vendedorId: 'seller-1',
-          data: new Date().toISOString().split('T')[0],
-          valor: 0,
-          autonoma: true,
-        });
-        alert('Compra registrada! 🎉');
-        // Recarrega a página
-        window.location.reload();
-      } else {
-        alert('Contato registrado com o cliente');
-      }
-    } catch (err) {
-      alert(err instanceof Error ? err.message : 'Erro ao registrar ação');
-    }
+  // A compra agora é registrada pela visita (ver /visita/[id]).
+  const handleContato = () => {
+    alert('Contato registrado com o cliente');
   };
 
   if (loading) {
@@ -184,20 +167,11 @@ export default function CarteiraPage() {
                   <button
                     onClick={(e) => {
                       e.preventDefault();
-                      handleQuickAction(followup, 'contact');
+                      handleContato();
                     }}
                     className="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-800 text-sm py-2 rounded transition"
                   >
                     📞 Contato
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleQuickAction(followup, 'purchase');
-                    }}
-                    className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-sm py-2 rounded transition"
-                  >
-                    🛒 Compra
                   </button>
                 </div>
               </div>
