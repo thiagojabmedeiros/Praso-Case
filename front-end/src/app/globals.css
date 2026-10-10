@@ -15,34 +15,34 @@
   --muted-foreground: #475569;
   --border: #e2e8f0;
   --input: #64748b;
-  --ring: #2563eb;
+  --ring: #3b61ba;
 
-  --primary: #2563eb;
+  --primary: #3b61ba;
   --on-primary: #ffffff;
-  --primary-soft: #dbeafe;
-  --primary-text: #1d4ed8;
+  --primary-soft: #e6ecf9;
+  --primary-text: #2a4584;
 
-  --success: #047857;
+  --success: #2e6b53;
   --on-success: #ffffff;
-  --success-soft: #d1fae5;
-  --success-text: #065f46;
+  --success-soft: #e3f2ec;
+  --success-text: #1e523d;
 
-  --warning: #b45309;
+  --warning: #8c5721;
   --on-warning: #ffffff;
-  --warning-soft: #fef3c7;
-  --warning-text: #92400e;
+  --warning-soft: #f5ebdb;
+  --warning-text: #694017;
 
-  --danger: #dc2626;
+  --danger: #b03f3b;
   --on-danger: #ffffff;
-  --danger-soft: #fee2e2;
-  --danger-text: #b91c1c;
+  --danger-soft: #f8e8e7;
+  --danger-text: #802b28;
 
   --radius-card: 1rem;
 
   /* Gradiente de fundo e vidro (liquid glass). Valores suaves: o texto mantém contraste mínimo de 4,5:1. */
-  --glow-1: rgb(37 99 235 / 0.24);
-  --glow-3: rgb(29 78 216 / 0.16);
-  --glow-4: rgb(37 99 235 / 0.14);
+  --glow-1: rgb(59 97 186 / 0.17);
+  --glow-3: rgb(59 97 186 / 0.11);
+  --glow-4: rgb(59 97 186 / 0.09);
   --glass-bg: rgb(255 255 255 / 0.50);
   --glass-bg-hover: rgb(255 255 255 / 0.68);
   --glass-sheen: rgb(255 255 255 / 0.55);
@@ -68,31 +68,31 @@
     --muted-foreground: #a8b4c8;
     --border: #2a3650;
     --input: #7b8aa3;
-    --ring: #60a5fa;
+    --ring: #8fa9e6;
 
-    --primary: #2563eb;
+    --primary: #3b61ba;
     --on-primary: #ffffff;
-    --primary-soft: #14284f;
-    --primary-text: #93c5fd;
+    --primary-soft: #2e3e68;
+    --primary-text: #b9caf4;
 
-    --success: #047857;
+    --success: #2e6b53;
     --on-success: #ffffff;
-    --success-soft: #0b2e22;
-    --success-text: #6ee7b7;
+    --success-soft: #1d342b;
+    --success-text: #97d8be;
 
-    --warning: #b45309;
+    --warning: #8c5721;
     --on-warning: #ffffff;
-    --warning-soft: #33240a;
-    --warning-text: #fcd34d;
+    --warning-soft: #382e1e;
+    --warning-text: #e8c891;
 
-    --danger: #dc2626;
+    --danger: #b03f3b;
     --on-danger: #ffffff;
-    --danger-soft: #3a1418;
-    --danger-text: #fca5a5;
+    --danger-soft: #3e2423;
+    --danger-text: #eeadaa;
 
-    --glow-1: rgb(37 99 235 / 0.46);
-    --glow-3: rgb(29 78 216 / 0.32);
-    --glow-4: rgb(37 99 235 / 0.22);
+    --glow-1: rgb(70 104 190 / 0.30);
+    --glow-3: rgb(70 104 190 / 0.20);
+    --glow-4: rgb(70 104 190 / 0.13);
     --glass-bg: rgb(150 185 255 / 0.11);
     --glass-bg-hover: rgb(150 185 255 / 0.19);
     --glass-sheen: rgb(255 255 255 / 0.06);
@@ -240,8 +240,8 @@ body::before {
   background-color: var(--glass-bg);
   background-image: linear-gradient(145deg, var(--glass-sheen), transparent 60%);
   border-color: var(--glass-border);
-  -webkit-backdrop-filter: blur(22px) saturate(1.8);
-  backdrop-filter: blur(22px) saturate(1.8);
+  -webkit-backdrop-filter: blur(22px) saturate(1.25);
+  backdrop-filter: blur(22px) saturate(1.25);
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
     inset 0 -1px 0 rgb(255 255 255 / 0.04),
@@ -255,8 +255,8 @@ body::before {
 .vidro-barra {
   background: var(--glass-bg);
   border-color: var(--glass-border);
-  -webkit-backdrop-filter: blur(18px) saturate(1.5);
-  backdrop-filter: blur(18px) saturate(1.5);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  backdrop-filter: blur(18px) saturate(1.2);
 }
 
 /* Sem suporte a desfoque, ou com transparência reduzida no sistema: volta a fundos sólidos. */

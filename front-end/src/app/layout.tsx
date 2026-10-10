@@ -33,7 +33,7 @@ export const metadata: Metadata = {
 };
 
 const ICONE =
-  "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect fill='%232563eb' width='180' height='180' rx='40'/><text x='90' y='122' font-size='104' font-weight='800' font-family='sans-serif' fill='white' text-anchor='middle'>P</text></svg>";
+  "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect fill='%233b61ba' width='180' height='180' rx='40'/><text x='90' y='122' font-size='104' font-weight='800' font-family='sans-serif' fill='white' text-anchor='middle'>P</text></svg>";
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
