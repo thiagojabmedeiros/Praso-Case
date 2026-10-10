@@ -41,7 +41,6 @@
 
   /* Gradiente de fundo e vidro (liquid glass). Valores suaves: o texto mantém contraste mínimo de 4,5:1. */
   --glow-1: rgb(37 99 235 / 0.24);
-  --glow-2: rgb(14 165 233 / 0.20);
   --glow-3: rgb(29 78 216 / 0.16);
   --glow-4: rgb(37 99 235 / 0.14);
   --glass-bg: rgb(255 255 255 / 0.50);
@@ -92,7 +91,6 @@
     --danger-text: #fca5a5;
 
     --glow-1: rgb(37 99 235 / 0.46);
-    --glow-2: rgb(14 165 233 / 0.30);
     --glow-3: rgb(29 78 216 / 0.32);
     --glow-4: rgb(37 99 235 / 0.22);
     --glass-bg: rgb(150 185 255 / 0.11);
@@ -233,7 +231,6 @@ body::before {
   pointer-events: none;
   background:
     radial-gradient(52rem 40rem at 16% 6%, var(--glow-1), transparent 66%),
-    radial-gradient(46rem 36rem at 94% 20%, var(--glow-2), transparent 62%),
     radial-gradient(48rem 38rem at 50% 98%, var(--glow-3), transparent 64%),
     radial-gradient(40rem 30rem at 58% 46%, var(--glow-4), transparent 66%);
 }
