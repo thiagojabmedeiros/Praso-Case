@@ -38,6 +38,14 @@
   --danger-text: #b91c1c;
 
   --radius-card: 1rem;
+
+  /* Marcas de terceiros (botões de navegação). Fixas nos dois temas: a identidade não muda. */
+  --brand-waze: #33ccff;
+  --brand-waze-text: #05283a;
+  --brand-maps: #ffffff;
+  --brand-maps-text: #3c4043;
+  --brand-maps-border: #dadce0;
+  --brand-maps-hover: #f1f3f4;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -102,6 +110,13 @@
   --color-on-danger: var(--on-danger);
   --color-danger-soft: var(--danger-soft);
   --color-danger-text: var(--danger-text);
+
+  --color-brand-waze: var(--brand-waze);
+  --color-brand-waze-text: var(--brand-waze-text);
+  --color-brand-maps: var(--brand-maps);
+  --color-brand-maps-text: var(--brand-maps-text);
+  --color-brand-maps-border: var(--brand-maps-border);
+  --color-brand-maps-hover: var(--brand-maps-hover);
 
   --font-sans: var(--font-plus-jakarta), ui-sans-serif, system-ui, sans-serif;
 

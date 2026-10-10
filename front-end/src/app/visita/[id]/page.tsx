@@ -5,9 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import {
   Clock,
   DoorClosed,
-  Map as MapaIcone,
   MapPin,
-  Navigation,
   Phone,
   PhoneCall,
   ShoppingCart,
@@ -22,6 +20,7 @@ import {
 import { Establishment, Turno, Visit, VisitResult } from '@/lib/types';
 import { establishmentsAPI, followupsAPI, visitsAPI } from '@/lib/api';
 import { FornecimentosCard } from '@/components/fornecimentos-card';
+import { BotaoGoogleMaps, BotaoWaze } from '@/components/botoes-navegacao';
 import { IconeEnvio, IconeVoz } from '@/components/icones-animados';
 import {
   Badge,
@@ -33,7 +32,6 @@ import {
   ErroAviso,
   ListaSkeleton,
   PageHeader,
-  buttonClasses,
   cn,
   type Tom,
 } from '@/components/ui';
@@ -253,7 +251,6 @@ export default function VisitaPage() {
   const jaCadastrado = establishment.status !== 'lead';
   const resultadosVisiveis = RESULTADOS.filter((r) => r.valor !== 'cadastrou' || !jaCadastrado);
   const mostrarRetorno = resultado !== null && RESULTADOS_COM_RETORNO.includes(resultado);
-  const temCoordenadas = establishment.latitude != null && establishment.longitude != null;
   const hoje = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 
   return (
@@ -300,35 +297,8 @@ export default function VisitaPage() {
           </div>
 
           <div className="grid grid-cols-2 gap-2">
-            <a
-              href={
-                temCoordenadas
-                  ? `https://www.google.com/maps/search/?api=1&query=${establishment.latitude},${establishment.longitude}`
-                  : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(establishment.endereco)}`
-              }
-              target="_blank"
-              rel="noopener noreferrer"
-              className={buttonClasses({ variante: 'outline' })}
-            >
-              <MapaIcone aria-hidden="true" className="size-4" />
-              Maps
-            </a>
-            {temCoordenadas ? (
-              <a
-                href={`https://waze.com/ul?ll=${establishment.latitude},${establishment.longitude}&navigate=yes`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={buttonClasses({ variante: 'outline' })}
-              >
-                <Navigation aria-hidden="true" className="size-4" />
-                Waze
-              </a>
-            ) : (
-              <span aria-disabled="true" className={buttonClasses({ variante: 'outline', className: 'opacity-50' })}>
-                <Navigation aria-hidden="true" className="size-4" />
-                Waze
-              </span>
-            )}
+            <BotaoGoogleMaps destino={establishment} />
+            <BotaoWaze destino={establishment} />
           </div>
         </Secao>
 

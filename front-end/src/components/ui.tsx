@@ -110,7 +110,7 @@ export function Badge({
 
 /* ---------------------------------------------------------------- Botões */
 
-type Variante = 'primary' | 'secondary' | 'outline' | 'ghost' | 'success' | 'danger';
+type Variante = 'primary' | 'secondary' | 'outline' | 'ghost' | 'success' | 'danger' | 'waze' | 'maps';
 type Tamanho = 'md' | 'lg';
 
 const VARIANTES: Record<Variante, string> = {
@@ -120,6 +120,9 @@ const VARIANTES: Record<Variante, string> = {
   secondary: 'bg-muted text-foreground hover:bg-border active:bg-border',
   outline: 'border border-input text-foreground hover:bg-muted active:bg-muted',
   ghost: 'text-primary-text hover:bg-primary-soft active:bg-primary-soft',
+  // Botões de marca de terceiros: usam as cores da própria empresa, iguais nos dois temas.
+  waze: 'bg-brand-waze text-brand-waze-text hover:brightness-105 active:brightness-95',
+  maps: 'border border-brand-maps-border bg-brand-maps text-brand-maps-text hover:bg-brand-maps-hover active:bg-brand-maps-hover',
 };
 
 // Alvos de toque de no mínimo 44px; feedback por cor/brilho e por escala, sem mexer no layout.

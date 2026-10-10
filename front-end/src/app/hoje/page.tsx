@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { CalendarX2, Clock, Map as MapaIcone, MapPin, MapPinOff, Navigation, Phone } from 'lucide-react';
+import { CalendarX2, Clock, MapPin, MapPinOff, Phone } from 'lucide-react';
+import { BotaoGoogleMaps, BotaoWaze } from '@/components/botoes-navegacao';
 import { Recomendacao } from '@/lib/types';
 import { recommendationsAPI } from '@/lib/api';
 import {
@@ -106,7 +107,6 @@ export default function HojePage() {
             {recomendacoes.map(({ establishment: est, score, motivos }, i) => {
               const status = STATUS[est.status] ?? STATUS.churn;
               const prioridade = Math.round(score * 100);
-              const temCoordenadas = est.latitude != null && est.longitude != null;
               const horario = est.melhorHorario
                 ? `melhor às ${est.melhorHorario}`
                 : est.melhorTurno
@@ -197,38 +197,8 @@ export default function HojePage() {
                             Ligar
                           </span>
                         )}
-                        <a
-                          href={
-                            temCoordenadas
-                              ? `https://www.google.com/maps/search/?api=1&query=${est.latitude},${est.longitude}`
-                              : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(est.endereco)}`
-                          }
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={buttonClasses({ variante: 'outline' })}
-                        >
-                          <MapaIcone aria-hidden="true" className="size-4" />
-                          Maps
-                        </a>
-                        {temCoordenadas ? (
-                          <a
-                            href={`https://waze.com/ul?ll=${est.latitude},${est.longitude}&navigate=yes`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className={buttonClasses({ variante: 'outline' })}
-                          >
-                            <Navigation aria-hidden="true" className="size-4" />
-                            Waze
-                          </a>
-                        ) : (
-                          <span
-                            aria-disabled="true"
-                            className={buttonClasses({ variante: 'outline', className: 'opacity-50' })}
-                          >
-                            <Navigation aria-hidden="true" className="size-4" />
-                            Waze
-                          </span>
-                        )}
+                        <BotaoGoogleMaps destino={est} rotulo="Maps" />
+                        <BotaoWaze destino={est} />
                       </div>
                     </div>
                   </Card>
