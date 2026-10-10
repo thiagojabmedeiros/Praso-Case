@@ -85,6 +85,7 @@ export default function ResumoDoDiaPage() {
   const [erro, setErro] = useState<string | null>(null);
   const [copiado, setCopiado] = useState(false);
   const [data, setData] = useState('');
+  const [atualizadoEm, setAtualizadoEm] = useState('');
 
   useEffect(() => {
     setData(diaDe(new Date().toISOString()));
@@ -98,6 +99,7 @@ export default function ResumoDoDiaPage() {
         setVisitas(vis);
         setEstabelecimentos(est);
         setRecomendacoes(rec);
+        setAtualizadoEm(new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: FUSO }));
       } catch (err) {
         setErro(err instanceof Error ? err.message : 'Erro ao carregar o resumo');
       } finally {
@@ -176,19 +178,26 @@ export default function ResumoDoDiaPage() {
 
       {!carregando && !erro && linhas.length > 0 && (
         <div className="space-y-4 p-4">
+          <p className="rounded-xl bg-primary-soft px-4 py-3 text-sm font-semibold text-primary-text">
+            {`Você visitou ${totais.jaVisitados} de ${totais.jaVisitados + totais.pendentes} estabelecimentos`}
+            {totais.compras > 0
+              ? ` e fechou ${totais.compras} ${totais.compras === 1 ? 'compra' : 'compras'}, somando ${moeda(totais.valorCompras)}.`
+              : '.'}
+          </p>
+
           <div className="space-y-2">
             <div className="grid grid-cols-2 gap-2">
               <StatTile valor={totais.jaVisitados} rotulo="Já visitados" tom="primary" />
               <StatTile valor={totais.pendentes} rotulo="Pendentes" tom="warning" />
             </div>
             <div className="grid grid-cols-3 gap-2">
-              <StatTile valor={totais.cadastros} rotulo="Cadastros" tom="success" />
+              <StatTile valor={totais.cadastros} rotulo="Cadastros" tom="primary" />
               <StatTile
                 valor={totais.compras ? moedaCompacta(totais.valorCompras) : '—'}
                 rotulo={`Compras (${totais.compras})`}
                 tom="success"
               />
-              <StatTile valor={totais.recusados} rotulo="Recusados" tom="danger" />
+              <StatTile valor={totais.recusados} rotulo="Recusados" tom={totais.recusados > 0 ? 'danger' : 'neutral'} />
             </div>
           </div>
 
@@ -239,6 +248,10 @@ export default function ResumoDoDiaPage() {
               );
             })}
           </ol>
+
+          <p className="text-center text-xs text-muted-foreground">
+            Dados do dia · atualizado às {atualizadoEm || '—'}
+          </p>
         </div>
       )}
     </>

@@ -3,9 +3,9 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { CalendarCheck, ChevronRight, Target, Trophy } from 'lucide-react';
-import { establishmentsAPI, followupsAPI, sellersAPI } from '@/lib/api';
-import { Establishment, FollowUp, Seller } from '@/lib/types';
-import { Card, ErroAviso, Numero, PageHeader, Skeleton, StatTile } from '@/components/ui';
+import { establishmentsAPI, followupsAPI, recommendationsAPI, sellersAPI } from '@/lib/api';
+import { Establishment, FollowUp, Recomendacao, Seller } from '@/lib/types';
+import { Card, ErroAviso, Numero, PageHeader, Preenchimento, Skeleton, StatTile } from '@/components/ui';
 
 const VENDEDOR_ID = 'seller-1';
 
@@ -13,19 +13,22 @@ export default function Home() {
   const [vendedor, setVendedor] = useState<Seller | null>(null);
   const [estabelecimentos, setEstabelecimentos] = useState<Establishment[]>([]);
   const [followups, setFollowups] = useState<FollowUp[]>([]);
+  const [recomendacoes, setRecomendacoes] = useState<Recomendacao[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
 
   useEffect(() => {
     async function carregar() {
-      const [v, e, f] = await Promise.allSettled([
+      const [v, e, f, r] = await Promise.allSettled([
         sellersAPI.getById(VENDEDOR_ID),
         establishmentsAPI.getAll(),
         followupsAPI.getByVendedor(VENDEDOR_ID),
+        recommendationsAPI.getByVendedor(VENDEDOR_ID),
       ]);
       if (v.status === 'fulfilled') setVendedor(v.value);
       if (e.status === 'fulfilled') setEstabelecimentos(e.value);
       if (f.status === 'fulfilled') setFollowups(f.value);
+      if (r.status === 'fulfilled') setRecomendacoes(r.value);
       if (v.status === 'rejected' && e.status === 'rejected' && f.status === 'rejected') {
         setErro('Não foi possível carregar o painel. Verifique a conexão e tente de novo.');
       }
@@ -40,6 +43,10 @@ export default function Home() {
     (f) => !f.metaBatida && (f.urgencia === 'vencida' || f.urgencia === 'critica'),
   ).length;
   const primeiroNome = vendedor?.nome.split(' ')[0];
+  // Progresso de hoje: visitas feitas sobre a carteira de hoje (a própria carteira é a meta do dia).
+  const visitadasHoje = recomendacoes.filter((r) => r.visitadoHoje).length;
+  const carteiraHoje = recomendacoes.length;
+  const percentualHoje = carteiraHoje ? Math.round((visitadasHoje / carteiraHoje) * 100) : 0;
 
   return (
     <>
@@ -69,14 +76,43 @@ export default function Home() {
           </div>
         </Card>
 
+        {/* Progresso de hoje: o KPI principal do dia, com comparação contra a carteira */}
+        <Card className="animate-fade-up space-y-3" style={{ animationDelay: '90ms' }}>
+          {carregando ? (
+            <Skeleton className="h-12 w-full" />
+          ) : (
+            <>
+              <div className="flex items-baseline justify-between gap-2">
+                <p className="text-base font-bold text-foreground">
+                  Hoje: {visitadasHoje} de {carteiraHoje} visitas feitas
+                </p>
+                <p className="text-sm font-semibold tabular-nums text-muted-foreground">{percentualHoje}%</p>
+              </div>
+              <div
+                role="meter"
+                aria-label="Visitas feitas hoje"
+                aria-valuemin={0}
+                aria-valuemax={carteiraHoje}
+                aria-valuenow={visitadasHoje}
+                className="h-2 overflow-hidden rounded-full bg-muted"
+              >
+                <Preenchimento porcentagem={percentualHoje} className="bg-primary" atraso={150} />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {carteiraHoje - visitadasHoje} pendentes na carteira de hoje
+              </p>
+            </>
+          )}
+        </Card>
+
         {/* Funil */}
         <section aria-labelledby="funil" className="animate-fade-up" style={{ animationDelay: '50ms' }}>
           <h2 id="funil" className="mb-2 text-sm font-bold uppercase tracking-wide text-muted-foreground">
             Seu funil
           </h2>
           <div className="grid grid-cols-3 gap-2">
-            <StatTile valor={carregando ? '–' : contar('lead')} rotulo="Leads" tom="danger" />
-            <StatTile valor={carregando ? '–' : contar('oportunidade')} rotulo="Oportunidades" tom="warning" />
+            <StatTile valor={carregando ? '–' : contar('lead')} rotulo="Leads" tom="neutral" />
+            <StatTile valor={carregando ? '–' : contar('oportunidade')} rotulo="Oportunidades" tom="primary" />
             <StatTile valor={carregando ? '–' : contar('cliente')} rotulo="Clientes" tom="success" />
           </div>
         </section>
