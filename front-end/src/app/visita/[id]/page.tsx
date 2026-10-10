@@ -248,8 +248,15 @@ export default function VisitaPage() {
         {/* Resultado da visita */}
         <div className="bg-white border border-slate-200 rounded-lg p-4">
           <h2 className="font-semibold text-slate-900 mb-3">✅ Resultado da Visita</h2>
+          {establishment.status !== 'lead' && (
+            <p className="mb-3 text-sm bg-emerald-50 border border-emerald-200 text-emerald-900 rounded px-3 py-2">
+              ✅ Já cadastrado na plataforma
+            </p>
+          )}
           <div className="grid grid-cols-2 gap-2">
-            {visitResults.map((result) => (
+            {visitResults
+              .filter((result) => result.value !== 'cadastrou' || establishment.status === 'lead')
+              .map((result) => (
               <button
                 key={result.value}
                 onClick={() => setSelectedResult(result.value)}
