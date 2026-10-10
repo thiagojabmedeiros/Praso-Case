@@ -71,6 +71,12 @@ export const visitsAPI = {
       method: 'POST',
       body: JSON.stringify(data),
     }),
+
+  anular: (id: string, motivo: string) =>
+    apiCall<Visit>(`/visits/${id}/anular`, {
+      method: 'PATCH',
+      body: JSON.stringify({ motivo }),
+    }),
 };
 
 // Purchases

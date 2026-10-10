@@ -255,7 +255,7 @@ export default function VisitaPage() {
           </div>
         )}
 
-        {(selectedResult === 'cadastrou' || selectedResult === 'em-acompanhamento') && (
+        {(selectedResult === 'cadastrou' || selectedResult === 'em-acompanhamento' || selectedResult === 'fechado' || selectedResult === 'ausente') && (
           <div className="bg-white border border-slate-200 rounded-lg p-4">
             <h2 className="font-semibold text-slate-900 mb-3">📅 Próximo contato</h2>
             <input
@@ -264,7 +264,7 @@ export default function VisitaPage() {
               onChange={(e) => setProximoContato(e.target.value)}
               className="w-full border border-slate-300 rounded px-3 py-2 text-sm"
             />
-            <p className="text-xs text-slate-500 mt-2">Quando você combinou de voltar ou de acompanhar.</p>
+            <p className="text-xs text-slate-500 mt-2">Quando você combinou de voltar ou de tentar de novo.</p>
           </div>
         )}
 

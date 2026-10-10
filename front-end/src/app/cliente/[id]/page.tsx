@@ -34,6 +34,17 @@ export default function ClientePage() {
     load();
   }, [params.id]);
 
+  const handleAnular = async (visit: Visit) => {
+    const motivo = window.prompt('Por que você está anulando esta visita?');
+    if (!motivo || !motivo.trim()) return;
+    try {
+      const anulada = await visitsAPI.anular(visit.id, motivo.trim());
+      setVisits((atual) => atual.map((v) => (v.id === visit.id ? anulada : v)));
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Erro ao anular visita');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50 p-4 flex items-center justify-center">
@@ -134,7 +145,7 @@ export default function ClientePage() {
               {visits.map((visit) => (
                 <div
                   key={visit.id}
-                  className="p-3 bg-slate-50 rounded border border-slate-200"
+                  className={`p-3 rounded border border-slate-200 ${visit.anuladaEm ? 'bg-slate-100 opacity-60' : 'bg-slate-50'}`}
                 >
                   <div className="flex items-start justify-between mb-2">
                     <p className="text-sm font-medium text-slate-900">
@@ -155,6 +166,23 @@ export default function ClientePage() {
                     <p className="text-sm text-slate-600">
                       <strong>Nota:</strong> {visit.nota}
                     </p>
+                  )}
+                  {visit.proximoContato && !visit.anuladaEm && (
+                    <p className="text-xs text-slate-600 mt-1">
+                      📅 Próximo contato: {new Date(visit.proximoContato).toLocaleDateString('pt-BR')}
+                    </p>
+                  )}
+                  {visit.anuladaEm ? (
+                    <p className="text-xs text-red-700 mt-2">
+                      Anulada em {new Date(visit.anuladaEm).toLocaleDateString('pt-BR')}: {visit.motivoAnulacao}
+                    </p>
+                  ) : (
+                    <button
+                      onClick={() => handleAnular(visit)}
+                      className="mt-2 text-xs text-red-700 hover:underline"
+                    >
+                      Anular visita
+                    </button>
                   )}
                   {visit.geo && (
                     <p className="text-xs text-slate-500 mt-1">
