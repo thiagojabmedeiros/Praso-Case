@@ -162,15 +162,25 @@ export default function HojePage() {
                   <a
                     href={
                       est.latitude != null && est.longitude != null
-                        ? `https://waze.com/ul?ll=${est.latitude},${est.longitude}&navigate=yes`
-                        : `https://maps.google.com/?q=${encodeURIComponent(est.endereco)}`
+                        ? `https://www.google.com/maps/search/?api=1&query=${est.latitude},${est.longitude}`
+                        : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(est.endereco)}`
                     }
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-800 text-sm py-2 rounded transition text-center"
                   >
-                    {est.latitude != null ? 'Waze' : 'Mapas'}
+                    Google Maps
                   </a>
+                  {est.latitude != null && est.longitude != null && (
+                    <a
+                      href={`https://waze.com/ul?ll=${est.latitude},${est.longitude}&navigate=yes`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-800 text-sm py-2 rounded transition text-center"
+                    >
+                      Waze
+                    </a>
+                  )}
                 </div>
             </div>
           ))

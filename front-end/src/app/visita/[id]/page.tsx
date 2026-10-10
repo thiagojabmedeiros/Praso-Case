@@ -176,18 +176,30 @@ export default function VisitaPage() {
               </p>
             )}
           </div>
-          <a
-            href={
-              establishment.latitude != null && establishment.longitude != null
-                ? `https://waze.com/ul?ll=${establishment.latitude},${establishment.longitude}&navigate=yes`
-                : `https://maps.google.com/?q=${encodeURIComponent(establishment.endereco)}`
-            }
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-3 block w-full text-center bg-slate-200 hover:bg-slate-300 text-slate-800 text-sm py-2 rounded transition"
-          >
-            {establishment.latitude != null ? 'Abrir no Waze' : 'Abrir no Mapas'}
-          </a>
+          <div className="mt-3 flex gap-2">
+            <a
+              href={
+                establishment.latitude != null && establishment.longitude != null
+                  ? `https://www.google.com/maps/search/?api=1&query=${establishment.latitude},${establishment.longitude}`
+                  : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(establishment.endereco)}`
+              }
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 text-center bg-slate-200 hover:bg-slate-300 text-slate-800 text-sm py-2 rounded transition"
+            >
+              Abrir no Google Maps
+            </a>
+            {establishment.latitude != null && establishment.longitude != null && (
+              <a
+                href={`https://waze.com/ul?ll=${establishment.latitude},${establishment.longitude}&navigate=yes`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 text-center bg-slate-200 hover:bg-slate-300 text-slate-800 text-sm py-2 rounded transition"
+              >
+                Abrir no Waze
+              </a>
+            )}
+          </div>
         </div>
 
         {/* Resultado da visita */}
