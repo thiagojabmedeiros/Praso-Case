@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Establishment, EstablishmentStatus } from '../types';
 import { PrismaService } from '../prisma/prisma.service';
 import { docToDb, toEstablishment } from '../prisma/mappers';
+import { aplicarChurn } from './churn';
 
 type CreateInput = Omit<Establishment, 'id' | 'createdAt' | 'updatedAt'>;
 
@@ -14,6 +15,7 @@ export class EstablishmentsService {
     vendedorId?: string;
     bairro?: string;
   }): Promise<Establishment[]> {
+    await aplicarChurn(this.prisma);
     const rows = await this.prisma.establishment.findMany({
       where: {
         ...(filters?.status && { status: filters.status }),

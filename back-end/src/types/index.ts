@@ -75,7 +75,7 @@ export interface FollowUp {
   vendedorId: string;
   primeiraCompraData: Date;
   ultimaCompraData: Date;
-  proximoDeadline: Date; // 45 dias da 1ª compra
+  proximoDeadline: Date; // 15 dias, renovados a cada venda
   comprasAte: number; // quantas compras autonomas já fez
   faltam: number; // 3 - comprasAte
   diasRestantes: number;

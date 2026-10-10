@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { toEstablishment } from '../prisma/mappers';
 import { FollowUpsService } from '../followups/followups.service';
+import { aplicarChurn } from '../establishments/churn';
 import { Establishment, FollowUp } from '../types';
 import { dataRecife, haversineKm, pontuar } from './scoring';
 
@@ -31,6 +32,8 @@ export class RecommendationsService {
     agora: Date = new Date(),
     origem?: { lat: number; lng: number },
   ): Promise<Recomendacao[]> {
+    // Churn é automático: a carteira do dia sempre sai com o status em dia.
+    await aplicarChurn(this.prisma, agora);
     const rows = await this.prisma.establishment.findMany({ where: { vendedorId } });
     const ids = rows.map((r) => r.id);
 

@@ -108,7 +108,8 @@ export class VisitsService {
           where: { id: data.vendedorId },
           data: { pontuacaoAcumulada: { increment: pontos } },
         });
-      } else if (est && est.status === 'oportunidade' && data.resultado === 'compra') {
+      } else if (est && (est.status === 'oportunidade' || est.status === 'churn') && data.resultado === 'compra') {
+        // Compra de quem estava em churn reativa o cliente.
         await tx.establishment.update({ where: { id: est.id }, data: { status: 'cliente' } });
       }
 
