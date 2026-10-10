@@ -3,6 +3,7 @@ import { Visit } from '../types';
 import { PrismaService } from '../prisma/prisma.service';
 import { resultToDb, toVisit } from '../prisma/mappers';
 import { pontosDeAquisicao } from './pontuacao';
+import { registrarRecorrencia } from '../purchases/recorrencia';
 
 // `compra` é opcional e só vale quando o resultado da visita é "compra".
 type CreateInput = Omit<Visit, 'id' | 'createdAt'> & {
@@ -65,6 +66,9 @@ export class VisitsService {
             autonoma: data.compra.autonoma,
           },
         });
+        if (data.compra.autonoma) {
+          await registrarRecorrencia(tx, data.establishmentId, data.vendedorId);
+        }
       }
 
       return toVisit(row);
