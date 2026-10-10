@@ -4,7 +4,11 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { AlertTriangle, CalendarClock, Clock, Flame, Phone, Target, Trophy } from 'lucide-react';
 import { FollowUp, Establishment } from '@/lib/types';
-import { followupsAPI, establishmentsAPI } from '@/lib/api';
+import { followupsAPI, establishmentsAPI, visitsAPI } from '@/lib/api';
+import { Visit } from '@/lib/types';
+
+// Dia no fuso de Recife: a visita "de hoje" segue o mesmo critério da tela Hoje.
+const diaRecife = (iso: string) => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Recife' }).format(new Date(iso));
 import {
   Badge,
   ButtonLink,
@@ -74,13 +78,26 @@ function Etapas({ feitas, tom, atraso = 0 }: { feitas: number; tom: string; atra
 
 export default function RecorrenciasPage() {
   const [itens, setItens] = useState<Item[]>([]);
+  // Estabelecimentos com visita válida hoje: o botão Visitar fica desabilitado até o dia seguinte.
+  const [visitadosHoje, setVisitadosHoje] = useState<Set<string>>(new Set());
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
 
   useEffect(() => {
     async function carregar() {
       try {
-        const dados = await followupsAPI.getByVendedor('seller-1');
+        const [dados, visitas] = await Promise.all([
+          followupsAPI.getByVendedor('seller-1'),
+          visitsAPI.getAll().catch(() => [] as Visit[]),
+        ]);
+        const hoje = diaRecife(new Date().toISOString());
+        setVisitadosHoje(
+          new Set(
+            visitas
+              .filter((v) => v.vendedorId === 'seller-1' && !v.anuladaEm && diaRecife(v.dataHora) === hoje)
+              .map((v) => v.establishmentId),
+          ),
+        );
 
         // Enriquece com os dados do estabelecimento (nome, telefone).
         const enriquecidos = await Promise.all(
@@ -196,7 +213,17 @@ export default function RecorrenciasPage() {
                     {/* Ações: cliente que bateu a meta não recebe mais visitas */}
                     {!item.metaBatida && (
                       <div className="grid grid-cols-2 gap-2 pt-1">
-                        <ButtonLink href={`/visita/${item.establishmentId}`}>Visitar</ButtonLink>
+                        {visitadosHoje.has(item.establishmentId) ? (
+                          <span
+                            aria-disabled="true"
+                            aria-label="Visitar (indisponível: visita já registrada hoje)"
+                            className={buttonClasses({ className: 'opacity-50' })}
+                          >
+                            Visitado hoje
+                          </span>
+                        ) : (
+                          <ButtonLink href={`/visita/${item.establishmentId}`}>Visitar</ButtonLink>
+                        )}
                         {est?.telefone ? (
                           <a
                             href={`tel:${est.telefone.replace(/[^0-9+]/g, '')}`}
