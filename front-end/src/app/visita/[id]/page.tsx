@@ -346,11 +346,11 @@ export default function VisitaPage() {
                     setErroForm(null);
                   }}
                   className={cn(
-                    'flex min-h-16 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 px-2 py-2 text-sm font-semibold transition-[background-color,border-color,color,transform] duration-150 ease-out active:scale-95',
+                    'flex min-h-16 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 px-2 py-2 text-sm font-semibold transition-colors',
                     ativo ? SELECIONADO[tom] : 'border-border bg-card text-foreground hover:bg-muted',
                   )}
                 >
-                  <Icone key={String(ativo)} aria-hidden="true" className={cn('size-5', ativo && 'animate-pop')} />
+                  <Icone aria-hidden="true" className="size-5" />
                   {rotulo}
                 </button>
               );
@@ -420,7 +420,7 @@ export default function VisitaPage() {
                   aria-pressed={ativo}
                   onClick={() => setMelhorTurno(ativo ? null : turno.valor)}
                   className={cn(
-                    'min-h-11 cursor-pointer rounded-xl border-2 text-sm font-semibold transition-[background-color,border-color,color,transform] duration-150 ease-out active:scale-95',
+                    'min-h-11 cursor-pointer rounded-xl border-2 text-sm font-semibold transition-colors',
                     ativo
                       ? 'border-primary bg-primary-soft text-primary-text'
                       : 'border-border bg-card text-foreground hover:bg-muted',
@@ -449,12 +449,7 @@ export default function VisitaPage() {
             />
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <Button
-              variante="secondary"
-              onClick={iniciarNotaPorVoz}
-              disabled={ouvindo}
-              className={ouvindo ? 'animate-listen disabled:opacity-100' : undefined}
-            >
+            <Button variante="secondary" onClick={iniciarNotaPorVoz} disabled={ouvindo}>
               <Mic aria-hidden="true" className={cn('size-4', ouvindo && 'text-danger-text')} />
               {ouvindo ? 'Ouvindo…' : 'Ditar nota'}
             </Button>
@@ -470,7 +465,7 @@ export default function VisitaPage() {
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card/95 backdrop-blur">
         <div className="mx-auto max-w-2xl space-y-2 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3">
           {erroForm && (
-            <p key={erroForm} role="alert" className="animate-shake rounded-lg bg-danger-soft px-3 py-2 text-sm font-medium text-danger-text">
+            <p role="alert" className="rounded-lg bg-danger-soft px-3 py-2 text-sm font-medium text-danger-text">
               {erroForm}
             </p>
           )}

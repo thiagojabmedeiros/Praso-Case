@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { CalendarCheck, ChevronRight, Target, Trophy } from 'lucide-react';
 import { establishmentsAPI, followupsAPI, sellersAPI } from '@/lib/api';
 import { Establishment, FollowUp, Seller } from '@/lib/types';
-import { Card, ErroAviso, Numero, PageHeader, Skeleton, StatTile } from '@/components/ui';
+import { Card, ErroAviso, PageHeader, Skeleton, StatTile } from '@/components/ui';
 
 const VENDEDOR_ID = 'seller-1';
 
@@ -50,7 +50,7 @@ export default function Home() {
       <div className="space-y-4 p-4">
         {/* Pontuação */}
         <Card className="animate-fade-up flex items-center gap-4 bg-primary p-5 text-on-primary border-transparent">
-          <div className="flex size-14 shrink-0 animate-pop items-center justify-center rounded-2xl bg-white/15" style={{ animationDelay: '150ms' }}>
+          <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-white/15">
             <Trophy aria-hidden="true" className="size-7" />
           </div>
           <div>
@@ -59,7 +59,7 @@ export default function Home() {
               <Skeleton className="mt-1 h-9 w-24 bg-white/20" />
             ) : (
               <p className="text-4xl font-extrabold tabular-nums">
-                <Numero valor={vendedor?.pontuacaoAcumulada ?? 0} duracao={900} />
+                {(vendedor?.pontuacaoAcumulada ?? 0).toLocaleString('pt-BR')}
                 <span className="ml-1 text-base font-semibold opacity-90">pts</span>
               </p>
             )}
@@ -67,7 +67,7 @@ export default function Home() {
         </Card>
 
         {/* Funil */}
-        <section aria-labelledby="funil" className="animate-fade-up" style={{ animationDelay: '60ms' }}>
+        <section aria-labelledby="funil">
           <h2 id="funil" className="mb-2 text-sm font-bold uppercase tracking-wide text-muted-foreground">
             Seu funil
           </h2>
@@ -79,13 +79,13 @@ export default function Home() {
         </section>
 
         {/* Atalhos */}
-        <section aria-labelledby="atalhos" className="animate-fade-up space-y-3" style={{ animationDelay: '120ms' }}>
+        <section aria-labelledby="atalhos" className="space-y-3">
           <h2 id="atalhos" className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
             Seu dia
           </h2>
 
-          <Link href="/hoje" className="group block">
-            <Card interativo className="flex items-center gap-4">
+          <Link href="/hoje" className="block">
+            <Card className="flex items-center gap-4 transition-colors hover:bg-muted">
               <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary-text">
                 <CalendarCheck aria-hidden="true" className="size-6" />
               </div>
@@ -93,12 +93,12 @@ export default function Home() {
                 <p className="font-bold text-foreground">Carteira do dia</p>
                 <p className="text-sm text-muted-foreground">Estabelecimentos na ordem de prioridade</p>
               </div>
-              <ChevronRight aria-hidden="true" className="size-5 shrink-0 text-muted-foreground transition-transform duration-200 ease-out group-hover:translate-x-0.5" />
+              <ChevronRight aria-hidden="true" className="size-5 shrink-0 text-muted-foreground" />
             </Card>
           </Link>
 
-          <Link href="/carteira" className="group block">
-            <Card interativo className="flex items-center gap-4">
+          <Link href="/carteira" className="block">
+            <Card className="flex items-center gap-4 transition-colors hover:bg-muted">
               <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-success-soft text-success-text">
                 <Target aria-hidden="true" className="size-6" />
               </div>
@@ -112,7 +112,7 @@ export default function Home() {
                       : 'Nenhum cliente urgente agora'}
                 </p>
               </div>
-              <ChevronRight aria-hidden="true" className="size-5 shrink-0 text-muted-foreground transition-transform duration-200 ease-out group-hover:translate-x-0.5" />
+              <ChevronRight aria-hidden="true" className="size-5 shrink-0 text-muted-foreground" />
             </Card>
           </Link>
         </section>

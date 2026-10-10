@@ -13,7 +13,6 @@ import {
   ErroAviso,
   ListaSkeleton,
   PageHeader,
-  Preenchimento,
   StatTile,
   buttonClasses,
   cn,
@@ -59,9 +58,7 @@ function Etapas({ feitas, tom }: { feitas: number; tom: string }) {
   return (
     <div className="flex gap-1.5" aria-hidden="true">
       {[0, 1, 2].map((i) => (
-        <span key={i} className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
-          {i < feitas && <Preenchimento porcentagem={100} className={tom} atraso={250 + i * 140} />}
-        </span>
+        <span key={i} className={cn('h-2 flex-1 rounded-full', i < feitas ? tom : 'bg-muted')} />
       ))}
     </div>
   );

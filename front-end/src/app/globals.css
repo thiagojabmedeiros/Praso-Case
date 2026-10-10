@@ -105,91 +105,15 @@
 
   --font-sans: var(--font-plus-jakarta), ui-sans-serif, system-ui, sans-serif;
 
-  --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
-
-  --animate-fade-up: fade-up 0.32s var(--ease-out-strong) both;
-  --animate-fade-in: fade-in 0.2s ease-out both;
-  --animate-pop: pop 0.3s var(--ease-out-strong) both;
-  --animate-fill: fill 0.7s var(--ease-out-strong) both;
-  --animate-shake: shake 0.35s ease-in-out;
-  --animate-listen: listen 1.2s ease-out infinite;
-  --animate-shimmer: shimmer 1.6s ease-in-out infinite;
-
+  --animate-fade-up: fade-up 0.28s ease-out both;
   @keyframes fade-up {
     from {
       opacity: 0;
-      transform: translateY(10px);
+      transform: translateY(8px);
     }
     to {
       opacity: 1;
       transform: translateY(0);
-    }
-  }
-  @keyframes fade-in {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-  /* Entrada com leve overshoot: ícone ou selo que acabou de ganhar destaque. */
-  @keyframes pop {
-    0% {
-      opacity: 0;
-      transform: scale(0.6);
-    }
-    60% {
-      opacity: 1;
-      transform: scale(1.12);
-    }
-    100% {
-      transform: scale(1);
-    }
-  }
-  /* Barras enchem da esquerda para a direita (transform, não width). */
-  @keyframes fill {
-    from {
-      transform: scaleX(0);
-    }
-    to {
-      transform: scaleX(1);
-    }
-  }
-  @keyframes shake {
-    0%,
-    100% {
-      transform: translateX(0);
-    }
-    20% {
-      transform: translateX(-6px);
-    }
-    40% {
-      transform: translateX(5px);
-    }
-    60% {
-      transform: translateX(-3px);
-    }
-    80% {
-      transform: translateX(2px);
-    }
-  }
-  /* Anel que pulsa enquanto o microfone escuta. */
-  @keyframes listen {
-    from {
-      box-shadow: 0 0 0 0 color-mix(in srgb, var(--danger) 45%, transparent);
-    }
-    to {
-      box-shadow: 0 0 0 12px transparent;
-    }
-  }
-  @keyframes shimmer {
-    0%,
-    100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.55;
     }
   }
 }
@@ -213,7 +137,6 @@ body {
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
-    animation-delay: 0ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
