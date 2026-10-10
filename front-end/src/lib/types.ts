@@ -94,4 +94,12 @@ export interface Fornecimento {
   id: string;
   categoria: string;
   distribuidora: { id: string; nome: string };
+  /** Visita em que foi cadastrado (null se cadastrado fora de uma visita). */
+  visitId?: string | null;
+}
+
+/** Fornecedor informado durante a visita, ainda não salvo: só é gravado ao registrar a visita. */
+export interface FornecimentoRascunho {
+  distribuidora: string;
+  categoria: string;
 }

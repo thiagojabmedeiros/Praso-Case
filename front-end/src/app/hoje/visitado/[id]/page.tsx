@@ -2,10 +2,21 @@
 
 import { useEffect, useState, type ReactNode } from 'react';
 import { useParams } from 'next/navigation';
-import { CalendarCheck2, Clock, MapPin, PhoneCall, StickyNote } from 'lucide-react';
-import { establishmentsAPI, visitsAPI } from '@/lib/api';
-import { Establishment, Visit, VisitResult } from '@/lib/types';
+import { CalendarCheck2, Clock, PhoneCall, StickyNote, Truck } from 'lucide-react';
+import { establishmentsAPI, fornecimentosAPI, visitsAPI } from '@/lib/api';
+import { Establishment, Fornecimento, Visit, VisitResult } from '@/lib/types';
 import { Badge, Card, EmptyState, ErroAviso, ListaSkeleton, PageHeader, type Tom } from '@/components/ui';
+
+const CATEGORIA: Record<string, string> = {
+  carne: 'Carne',
+  pao: 'Pão',
+  bebidas: 'Bebidas',
+  laticinios: 'Laticínios',
+  hortifruti: 'Hortifruti',
+  mercearia: 'Mercearia',
+  embalagens: 'Embalagens',
+  outros: 'Outros',
+};
 
 // Vendedor fixo do protótipo (sem autenticação).
 const VENDEDOR_ID = 'seller-1';
@@ -50,6 +61,7 @@ export default function VisitadoHojePage() {
   const params = useParams<{ id: string }>();
   const [establishment, setEstablishment] = useState<Establishment | null>(null);
   const [visitasHoje, setVisitasHoje] = useState<Visit[]>([]);
+  const [fornecimentos, setFornecimentos] = useState<Fornecimento[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
 
@@ -57,11 +69,13 @@ export default function VisitadoHojePage() {
     const hoje = diaDe(new Date().toISOString());
     async function carregar() {
       try {
-        const [est, vis] = await Promise.all([
+        const [est, vis, forn] = await Promise.all([
           establishmentsAPI.getById(params.id),
           visitsAPI.getByEstablishment(params.id),
+          fornecimentosAPI.listar(params.id).catch(() => [] as Fornecimento[]),
         ]);
         setEstablishment(est);
+        setFornecimentos(forn);
         setVisitasHoje(
           vis
             .filter((v) => v.vendedorId === VENDEDOR_ID && !v.anuladaEm && diaDe(v.dataHora) === hoje)
@@ -102,14 +116,11 @@ export default function VisitadoHojePage() {
       : null;
   const compraHoje = visitasHoje.filter((v) => v.resultado === 'compra' && v.compra);
   const totalHoje = compraHoje.reduce((soma, v) => soma + (v.compra?.valor ?? 0), 0);
-  const retorno = [...visitasHoje].reverse().find((v) => v.proximoContato)?.proximoContato;
-  const notasHoje = visitasHoje.map((v) => v.nota.trim()).filter(Boolean);
 
   return (
     <>
       <PageHeader
         titulo={establishment.nomeFantasia}
-        subtitulo={`${establishment.bairro} · ${establishment.segmento}`}
         voltar={{ href: '/hoje', rotulo: 'Voltar para Hoje' }}
       />
 
@@ -173,26 +184,32 @@ export default function VisitadoHojePage() {
                         Próximo contato: {dataCurta(v.proximoContato)}
                       </p>
                     )}
+                    {fornecimentos.some((f) => f.visitId === v.id) && (
+                      <div className="mt-3 border-t border-border pt-2">
+                        <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                          <Truck aria-hidden="true" className="size-3.5" />
+                          Fornecedores cadastrados nesta visita
+                        </p>
+                        <ul className="mt-1.5 flex flex-wrap gap-1.5">
+                          {fornecimentos
+                            .filter((f) => f.visitId === v.id)
+                            .map((f) => (
+                              <li key={f.id}>
+                                <Badge tom="primary">
+                                  {f.distribuidora.nome} · {CATEGORIA[f.categoria] ?? f.categoria}
+                                </Badge>
+                              </li>
+                            ))}
+                        </ul>
+                      </div>
+                    )}
                   </li>
                 ))}
               </ol>
 
-              <dl className="grid grid-cols-2 gap-x-4 gap-y-2 border-t border-border pt-3 text-sm">
-                <Dado rotulo="Visitas">{visitasHoje.length}</Dado>
-                <Dado rotulo="Compras">
-                  {compraHoje.length ? `${compraHoje.length} · ${moeda(totalHoje)}` : 'Nenhuma'}
-                </Dado>
-                {retorno && (
-                  <div className="col-span-2">
-                    <Dado rotulo="Retorno combinado">{dataCurta(retorno)}</Dado>
-                  </div>
-                )}
-              </dl>
-
-              {notasHoje.length > 0 && (
-                <p className="flex items-start gap-2 text-sm text-muted-foreground">
-                  <MapPin aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
-                  {notasHoje.join(' · ')}
+              {compraHoje.length > 0 && (
+                <p className="border-t border-border pt-3 text-sm font-semibold text-foreground">
+                  Total em compras hoje: {compraHoje.length} · {moeda(totalHoje)}
                 </p>
               )}
             </>

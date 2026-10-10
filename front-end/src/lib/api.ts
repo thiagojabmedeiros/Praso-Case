@@ -8,6 +8,7 @@ import {
   VisitResult,
   Recomendacao,
   Fornecimento,
+  FornecimentoRascunho,
 } from './types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
@@ -73,7 +74,7 @@ export const visitsAPI = {
   getByEstablishment: (establishmentId: string) =>
     apiCall<Visit[]>(`/visits/establishment/${establishmentId}`),
 
-  create: (data: Omit<Visit, 'id' | 'createdAt'>) =>
+  create: (data: Omit<Visit, 'id' | 'createdAt'> & { fornecimentos?: FornecimentoRascunho[] }) =>
     apiCall<Visit>('/visits', {
       method: 'POST',
       body: JSON.stringify(data),

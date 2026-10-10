@@ -3,7 +3,7 @@
 import { useEffect, useId, useState } from 'react';
 import { Plus, Trash2, Truck } from 'lucide-react';
 import { fornecimentosAPI } from '@/lib/api';
-import { Fornecimento } from '@/lib/types';
+import { Fornecimento, FornecimentoRascunho } from '@/lib/types';
 import { Badge, Button } from '@/components/ui';
 
 export const CATEGORIAS = [
@@ -25,16 +25,20 @@ const CAMPO =
 interface Props {
   establishmentId: string;
   editavel?: boolean;
+  /** Modo da visita: não grava nada na hora; os novos fornecedores vão para `onRascunhoChange`. */
+  rascunho?: boolean;
+  onRascunhoChange?: (itens: FornecimentoRascunho[]) => void;
 }
 
 /** Distribuidoras que fornecem o estabelecimento, por categoria. Permite adicionar e remover. */
-export function FornecimentosCard({ establishmentId, editavel = true }: Props) {
+export function FornecimentosCard({ establishmentId, editavel = true, rascunho = false, onRascunhoChange }: Props) {
   const idBase = useId();
   const [lista, setLista] = useState<Fornecimento[]>([]);
   const [conhecidas, setConhecidas] = useState<string[]>([]);
   const [nome, setNome] = useState('');
   const [categoria, setCategoria] = useState('carne');
   const [erro, setErro] = useState<string | null>(null);
+  const [pendentes, setPendentes] = useState<FornecimentoRascunho[]>([]);
 
   useEffect(() => {
     fornecimentosAPI
@@ -46,6 +50,28 @@ export function FornecimentosCard({ establishmentId, editavel = true }: Props) {
       .then((d) => setConhecidas(d.map((x) => x.nome)))
       .catch(() => setConhecidas([]));
   }, [establishmentId]);
+
+  function atualizarPendentes(itens: FornecimentoRascunho[]) {
+    setPendentes(itens);
+    onRascunhoChange?.(itens);
+  }
+
+  // Modo visita: só guarda na tela. Nada é gravado até o registro da visita.
+  function adicionarRascunho() {
+    const distribuidora = nome.trim();
+    if (!distribuidora) return;
+    const mesmo = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
+    const repetido =
+      lista.some((f) => mesmo(f.distribuidora.nome, distribuidora) && f.categoria === categoria) ||
+      pendentes.some((p) => mesmo(p.distribuidora, distribuidora) && p.categoria === categoria);
+    if (repetido) {
+      setErro('Esse fornecedor já está cadastrado nesta categoria.');
+      return;
+    }
+    setErro(null);
+    atualizarPendentes([...pendentes, { distribuidora, categoria }]);
+    setNome('');
+  }
 
   async function adicionar() {
     if (!nome.trim()) return;
@@ -60,6 +86,10 @@ export function FornecimentosCard({ establishmentId, editavel = true }: Props) {
     } catch (err) {
       setErro(err instanceof Error ? err.message : 'Erro ao adicionar o fornecedor.');
     }
+  }
+
+  function retirarRascunho(indice: number) {
+    atualizarPendentes(pendentes.filter((_, i) => i !== indice));
   }
 
   async function remover(f: Fornecimento) {
@@ -81,7 +111,7 @@ export function FornecimentosCard({ establishmentId, editavel = true }: Props) {
         Fornecedores
       </h2>
 
-      {lista.length === 0 ? (
+      {lista.length === 0 && pendentes.length === 0 ? (
         <p className="text-sm text-muted-foreground">Nenhum fornecedor cadastrado.</p>
       ) : (
         <ul className="divide-y divide-border">
@@ -93,7 +123,7 @@ export function FornecimentosCard({ establishmentId, editavel = true }: Props) {
                   {labelCategoria(f.categoria)}
                 </Badge>
               </div>
-              {editavel && (
+              {editavel && !rascunho && (
                 <Button
                   variante="ghost"
                   aria-label={`Remover ${f.distribuidora.nome} (${labelCategoria(f.categoria)})`}
@@ -106,6 +136,34 @@ export function FornecimentosCard({ establishmentId, editavel = true }: Props) {
             </li>
           ))}
         </ul>
+      )}
+
+      {rascunho && pendentes.length > 0 && (
+        <div className="space-y-2 rounded-xl border border-dashed border-primary/50 p-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-primary-text">
+            Será salvo ao registrar a visita
+          </p>
+          <ul className="divide-y divide-border">
+            {pendentes.map((p, i) => (
+              <li key={`${p.distribuidora}-${p.categoria}`} className="flex items-center justify-between gap-2 py-1.5">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-foreground">{p.distribuidora}</p>
+                  <Badge tom="primary" className="mt-0.5">
+                    {labelCategoria(p.categoria)}
+                  </Badge>
+                </div>
+                <Button
+                  variante="ghost"
+                  aria-label={`Retirar ${p.distribuidora} (${labelCategoria(p.categoria)})`}
+                  onClick={() => retirarRascunho(i)}
+                  className="size-11 shrink-0 !p-0 text-danger-text hover:bg-danger-soft"
+                >
+                  <Trash2 aria-hidden="true" className="size-4" />
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
 
       {editavel && (
@@ -145,7 +203,12 @@ export function FornecimentosCard({ establishmentId, editavel = true }: Props) {
               ))}
             </select>
           </div>
-          <Button variante="outline" cheio onClick={adicionar} disabled={!nome.trim()}>
+          <Button
+            variante="outline"
+            cheio
+            onClick={rascunho ? adicionarRascunho : adicionar}
+            disabled={!nome.trim()}
+          >
             <Plus aria-hidden="true" className="size-4" />
             Adicionar fornecedor
           </Button>

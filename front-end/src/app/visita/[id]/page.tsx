@@ -17,7 +17,7 @@ import {
   X,
   type LucideIcon,
 } from 'lucide-react';
-import { Establishment, Turno, Visit, VisitResult } from '@/lib/types';
+import { Establishment, FornecimentoRascunho, Turno, Visit, VisitResult } from '@/lib/types';
 import { establishmentsAPI, followupsAPI, visitsAPI } from '@/lib/api';
 import { FornecimentosCard } from '@/components/fornecimentos-card';
 import { BotaoGoogleMaps, BotaoWaze } from '@/components/botoes-navegacao';
@@ -119,6 +119,8 @@ export default function VisitaPage() {
   const [enviando, setEnviando] = useState(false);
   const [enviado, setEnviado] = useState(false);
   const [ouvindo, setOuvindo] = useState(false);
+  // Fornecedores desta visita: só vão ao servidor quando a visita for registrada.
+  const [fornecimentosPendentes, setFornecimentosPendentes] = useState<FornecimentoRascunho[]>([]);
   const temporizador = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => () => {
@@ -202,7 +204,7 @@ export default function VisitaPage() {
         createdAt: new Date().toISOString(),
       };
 
-      await visitsAPI.create(visita);
+      await visitsAPI.create({ ...visita, fornecimentos: fornecimentosPendentes });
       // Confirma no próprio botão antes de voltar: o vendedor vê que o registro entrou.
       setEnviado(true);
       temporizador.current = setTimeout(() => router.push('/hoje'), ATRASO_CONFIRMACAO_MS);
@@ -304,7 +306,11 @@ export default function VisitaPage() {
 
         {/* Fornecedores */}
         <Card className="animate-fade-up" style={{ animationDelay: '50ms' }}>
-          <FornecimentosCard establishmentId={establishment.id} />
+          <FornecimentosCard
+            establishmentId={establishment.id}
+            rascunho
+            onRascunhoChange={setFornecimentosPendentes}
+          />
         </Card>
 
         {/* Resultado */}
