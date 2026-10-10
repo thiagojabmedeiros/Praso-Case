@@ -30,8 +30,8 @@ export function BottomNav() {
     <nav
       aria-label="Navegação principal"
       className={cn(
-        'fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card/95 backdrop-blur',
-        'lg:inset-y-0 lg:right-auto lg:flex lg:w-64 lg:flex-col lg:border-r lg:border-t-0 lg:bg-card lg:backdrop-blur-none',
+        'vidro-barra fixed inset-x-0 bottom-0 z-30 border-t border-border',
+        'lg:inset-y-0 lg:right-auto lg:flex lg:w-64 lg:flex-col lg:border-r lg:border-t-0',
         !visivelNoMobile && 'max-lg:hidden',
       )}
     >

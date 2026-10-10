@@ -77,7 +77,7 @@ export default function Home() {
         </Card>
 
         {/* Progresso de hoje: o KPI principal do dia, com comparação contra a carteira */}
-        <Card className="animate-fade-up space-y-3 lg:col-span-4 lg:self-stretch" style={{ animationDelay: '90ms' }}>
+        <Card vidro className="animate-fade-up space-y-3 lg:col-span-4 lg:self-stretch" style={{ animationDelay: '90ms' }}>
           {carregando ? (
             <Skeleton className="h-12 w-full" />
           ) : (

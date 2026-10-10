@@ -468,7 +468,7 @@ export default function VisitaPage() {
       </div>
 
       {/* Barra de envio fixa, acima da área segura. No desktop começa depois da sidebar. */}
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card/95 backdrop-blur lg:left-64">
+      <div className="vidro-barra fixed inset-x-0 bottom-0 z-30 border-t border-border lg:left-64">
         <div className="mx-auto max-w-2xl space-y-2 px-4 lg:max-w-6xl lg:px-8 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3">
           {erroForm && (
             <p

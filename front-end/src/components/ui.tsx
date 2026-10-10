@@ -54,12 +54,15 @@ export function Desenha({
 export function Card({
   className,
   interativo = false,
+  vidro = false,
   ...props
-}: ComponentProps<'div'> & { interativo?: boolean }) {
+}: ComponentProps<'div'> & { interativo?: boolean; vidro?: boolean }) {
   return (
     <div
       className={cn(
-        'rounded-2xl border border-border bg-card p-4 shadow-sm',
+        'rounded-2xl border border-border bg-card p-4',
+        // Vidro nos cartões de destaque; os demais ficam sólidos, com brilho sutil no topo.
+        vidro ? 'vidro' : 'sombra-cartao',
         // Cartão que é um link: cede ao toque como um botão (transição, então é interrompível).
         interativo &&
           'transition-[background-color,transform] duration-150 ease-out-strong hover:bg-muted active:scale-[0.985]',
@@ -191,7 +194,7 @@ export function PageHeader({
   acao?: ReactNode;
 }) {
   return (
-    <header className="sticky top-0 z-20 border-b border-border bg-background/90 pt-[env(safe-area-inset-top)] backdrop-blur">
+    <header className="vidro-barra sticky top-0 z-20 border-b border-border pt-[env(safe-area-inset-top)]">
       <div className="flex min-h-16 items-center gap-2 px-4 py-2">
         {voltar && (
           <Link
@@ -265,7 +268,7 @@ export function StatTile({
     danger: 'text-danger-text',
   };
   return (
-    <Card className="px-2 py-3 text-center">
+    <Card vidro className="px-2 py-3 text-center">
       <p className={cn('text-2xl font-extrabold tabular-nums', cor[tom])}>
         {typeof valor === 'number' ? <Numero valor={valor} chave={`stat:${rotulo}`} /> : valor}
       </p>
