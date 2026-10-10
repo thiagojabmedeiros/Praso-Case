@@ -264,7 +264,8 @@ export default function VisitaPage() {
         acao={<Badge tom={status.tom}>{status.rotulo}</Badge>}
       />
 
-      <div className="space-y-4 p-4">
+      <div className="space-y-4 p-4 lg:grid lg:grid-cols-2 lg:items-start lg:gap-6 lg:space-y-0 lg:p-8 lg:pb-28">
+        <div className="space-y-4">
         {/* Contexto */}
         <Secao titulo="Contexto da visita">
           <div className="space-y-3">
@@ -313,6 +314,9 @@ export default function VisitaPage() {
           />
         </Card>
 
+        </div>
+
+        <div className="space-y-4">
         {/* Resultado */}
         <Secao titulo="Resultado da visita" atraso={100}>
           {jaCadastrado && (
@@ -460,11 +464,12 @@ export default function VisitaPage() {
             </Button>
           </div>
         </Secao>
+        </div>
       </div>
 
-      {/* Barra de envio fixa, acima da área segura */}
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card/95 backdrop-blur">
-        <div className="mx-auto max-w-2xl space-y-2 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3">
+      {/* Barra de envio fixa, acima da área segura. No desktop começa depois da sidebar. */}
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card/95 backdrop-blur lg:left-64">
+        <div className="mx-auto max-w-2xl space-y-2 px-4 lg:max-w-6xl lg:px-8 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3">
           {erroForm && (
             <p
               key={erroForm}

@@ -50,8 +50,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         >
           Pular para o conteúdo
         </a>
-        <main id="conteudo" className="mx-auto w-full max-w-2xl flex-1 pb-28">
-          {children}
+        {/* Mobile: coluna única de até 2xl com a barra inferior. Desktop (lg): deixa 16rem para a sidebar e
+            usa uma área de conteúdo mais larga e centralizada. */}
+        <main id="conteudo" className="flex-1 lg:pl-64">
+          <div className="mx-auto w-full max-w-2xl pb-28 lg:max-w-6xl lg:pb-10">{children}</div>
         </main>
         <BottomNav />
       </body>

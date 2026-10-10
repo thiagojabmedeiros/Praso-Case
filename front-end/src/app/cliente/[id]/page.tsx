@@ -116,7 +116,7 @@ export default function ClientePage() {
         acao={<Badge tom={status.tom}>{status.rotulo}</Badge>}
       />
 
-      <div className="space-y-4 p-4">
+      <div className="space-y-4 p-4 lg:grid lg:grid-cols-2 lg:items-start lg:gap-6 lg:space-y-0 lg:p-8">
         {/* Informações */}
         <Card className="animate-fade-up space-y-4">
           <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Informações</h2>

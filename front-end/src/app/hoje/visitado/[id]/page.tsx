@@ -124,7 +124,7 @@ export default function VisitadoHojePage() {
         voltar={{ href: '/hoje', rotulo: 'Voltar para Hoje' }}
       />
 
-      <div className="space-y-4 p-4">
+      <div className="space-y-4 p-4 lg:grid lg:grid-cols-2 lg:items-start lg:gap-6 lg:space-y-0 lg:p-8">
         <Card className="animate-fade-up space-y-3">
           <div className="flex items-center justify-between gap-2">
             <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Cadastro</h2>

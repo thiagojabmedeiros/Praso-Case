@@ -208,8 +208,8 @@ export default function HojePage() {
       )}
 
       {!carregando && recomendacoes.length > 0 && (
-        <div className="space-y-3 p-4">
-          <div role="tablist" aria-label="Estabelecimentos de hoje" className="grid grid-cols-2 gap-1 rounded-xl bg-muted p-1">
+        <div className="space-y-3 p-4 lg:p-8">
+          <div role="tablist" aria-label="Estabelecimentos de hoje" className="grid grid-cols-2 gap-1 rounded-xl bg-muted p-1 lg:max-w-md">
             {(
               [
                 { valor: 'pendentes', rotulo: 'Pendentes', total: pendentes.length, Icone: CalendarX2 },
@@ -317,7 +317,7 @@ export default function HojePage() {
             </div>
           )}
 
-          <ol className="space-y-3">
+          <ol className="grid gap-3 lg:grid-cols-2 lg:items-start lg:gap-4">
             {listaFiltrada.map(({ establishment: est, score, motivos, visitadoHoje }, i) => {
               const status = STATUS[est.status] ?? STATUS.churn;
               const prioridade = Math.round(score * 100);

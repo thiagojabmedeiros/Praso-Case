@@ -54,9 +54,9 @@ export default function Home() {
 
       {erro && <ErroAviso mensagem={erro} />}
 
-      <div className="space-y-4 p-4">
+      <div className="flex flex-col gap-4 p-4 lg:grid lg:grid-cols-6 lg:gap-6 lg:p-8">
         {/* Pontuação */}
-        <Card className="animate-fade-up flex items-center gap-4 bg-primary p-5 text-on-primary border-transparent">
+        <Card className="animate-fade-up flex items-center gap-4 bg-primary p-5 text-on-primary border-transparent lg:col-span-2">
           <div
             className="flex size-14 shrink-0 animate-pop items-center justify-center rounded-2xl bg-white/15"
             style={{ animationDelay: '120ms' }}
@@ -77,7 +77,7 @@ export default function Home() {
         </Card>
 
         {/* Progresso de hoje: o KPI principal do dia, com comparação contra a carteira */}
-        <Card className="animate-fade-up space-y-3" style={{ animationDelay: '90ms' }}>
+        <Card className="animate-fade-up space-y-3 lg:col-span-4 lg:self-stretch" style={{ animationDelay: '90ms' }}>
           {carregando ? (
             <Skeleton className="h-12 w-full" />
           ) : (
@@ -106,7 +106,7 @@ export default function Home() {
         </Card>
 
         {/* Funil */}
-        <section aria-labelledby="funil" className="animate-fade-up" style={{ animationDelay: '50ms' }}>
+        <section aria-labelledby="funil" className="animate-fade-up lg:col-span-6" style={{ animationDelay: '50ms' }}>
           <h2 id="funil" className="mb-2 text-sm font-bold uppercase tracking-wide text-muted-foreground">
             Seu funil
           </h2>
@@ -118,8 +118,12 @@ export default function Home() {
         </section>
 
         {/* Atalhos */}
-        <section aria-labelledby="atalhos" className="animate-fade-up space-y-3" style={{ animationDelay: '100ms' }}>
-          <h2 id="atalhos" className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
+        <section
+          aria-labelledby="atalhos"
+          className="animate-fade-up space-y-3 lg:col-span-6 lg:grid lg:grid-cols-2 lg:gap-3 lg:space-y-0"
+          style={{ animationDelay: '100ms' }}
+        >
+          <h2 id="atalhos" className="text-sm font-bold uppercase tracking-wide text-muted-foreground lg:col-span-2">
             Seu dia
           </h2>
 

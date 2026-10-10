@@ -190,7 +190,8 @@ export default function ResumoDoDiaPage() {
       )}
 
       {!carregando && !erro && linhas.length > 0 && (
-        <div className="space-y-4 p-4">
+        <div className="space-y-4 p-4 lg:grid lg:grid-cols-5 lg:items-start lg:gap-6 lg:space-y-0 lg:p-8">
+          <div className="space-y-4 lg:sticky lg:top-24 lg:col-span-2">
           <p className="rounded-xl bg-primary-soft px-4 py-3 text-sm font-semibold text-primary-text">
             {`Você visitou ${totais.jaVisitados} de ${totais.jaVisitados + totais.pendentes} estabelecimentos`}
             {totais.compras > 0
@@ -240,6 +241,9 @@ export default function ResumoDoDiaPage() {
             {copiado ? 'Resumo copiado' : 'Copiar resumo'}
           </Button>
 
+          </div>
+
+          <div className="space-y-4 lg:col-span-3">
           <ol className="space-y-3">
             {linhas.map(({ estabelecimento: est, visitas: vs }, i) => {
               const retorno = [...vs].reverse().find((v) => v.proximoContato)?.proximoContato;
@@ -286,6 +290,7 @@ export default function ResumoDoDiaPage() {
           <p className="text-center text-xs text-muted-foreground">
             Dados do dia · atualizado às {atualizadoEm || '—'}
           </p>
+          </div>
         </div>
       )}
     </>
