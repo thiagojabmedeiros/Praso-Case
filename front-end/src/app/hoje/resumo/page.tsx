@@ -12,6 +12,7 @@ import {
   ErroAviso,
   ListaSkeleton,
   PageHeader,
+  Preenchimento,
   StatTile,
   type Tom,
 } from '@/components/ui';
@@ -147,6 +148,18 @@ export default function ResumoDoDiaPage() {
     };
   }, [doDia, recomendacoes]);
 
+  // Quantas visitas válidas de hoje tiveram cada resultado (um gráfico de barras, uma cor só).
+  const porResultado = useMemo(
+    () =>
+      (Object.keys(RESULTADO) as VisitResult[]).map((resultado) => ({
+        resultado,
+        rotulo: RESULTADO[resultado].rotulo,
+        quantidade: doDia.filter((v) => v.resultado === resultado).length,
+      })),
+    [doDia],
+  );
+  const maiorResultado = Math.max(...porResultado.map((r) => r.quantidade), 0);
+
   const copiarResumo = async () => {
     try {
       await navigator.clipboard.writeText(montarTexto(data, linhas, totais));
@@ -200,6 +213,33 @@ export default function ResumoDoDiaPage() {
               <StatTile valor={totais.recusados} rotulo="Recusados" tom={totais.recusados > 0 ? 'danger' : 'neutral'} />
             </div>
           </div>
+
+          <Card className="animate-fade-up space-y-3" style={{ animationDelay: '80ms' }}>
+            <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Resultados das visitas</h2>
+            <ul className="space-y-2.5">
+              {porResultado.map(({ resultado, rotulo, quantidade }, i) => {
+                const porcentagem = maiorResultado ? Math.round((quantidade / maiorResultado) * 100) : 0;
+                return (
+                  <li key={resultado} className="space-y-1">
+                    <div className="flex items-baseline justify-between text-sm">
+                      <span className="font-semibold text-foreground">{rotulo}</span>
+                      <span className="font-bold tabular-nums text-foreground">{quantidade}</span>
+                    </div>
+                    <div
+                      role="meter"
+                      aria-label={`${rotulo}: ${quantidade}`}
+                      aria-valuemin={0}
+                      aria-valuemax={maiorResultado}
+                      aria-valuenow={quantidade}
+                      className="h-2.5 overflow-hidden rounded-full bg-muted"
+                    >
+                      <Preenchimento porcentagem={porcentagem} className="bg-primary" atraso={i * 60} />
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </Card>
 
           <Button variante="outline" cheio onClick={copiarResumo}>
             {copiado ? <Check aria-hidden="true" className="size-4" /> : <Copy aria-hidden="true" className="size-4" />}
