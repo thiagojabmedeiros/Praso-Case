@@ -12,6 +12,7 @@ import {
   ErroAviso,
   ListaSkeleton,
   PageHeader,
+  Preenchimento,
   buttonClasses,
   type Tom,
 } from '@/components/ui';
@@ -150,7 +151,7 @@ export default function HojePage() {
                         aria-valuenow={prioridade}
                         className="h-2 flex-1 overflow-hidden rounded-full bg-muted"
                       >
-                        <div className="h-full rounded-full bg-primary" style={{ width: `${prioridade}%` }} />
+                        <Preenchimento porcentagem={prioridade} className="bg-primary" atraso={200} />
                       </div>
                       <span className="text-xs font-bold tabular-nums text-muted-foreground">
                         Prioridade {prioridade}
