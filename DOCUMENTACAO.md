@@ -69,6 +69,17 @@ Clientes em acompanhamento de recorrência:
 ### Cliente (`/cliente/[id]`)
 Histórico do estabelecimento: dados cadastrais, fornecedores, compras e todas as visitas. Permite anular visita (com motivo).
 
+### Layout e visual
+
+- **Mobile (abaixo de 1024px):** coluna única, com a barra de navegação inferior (Início, Hoje e Recorrências). O conteúdo ocupa a tela toda.
+- **Desktop (a partir de 1024px):** sidebar fixa à esquerda, com a marca e os três destinos. O conteúdo fica centralizado numa área de até 72rem.
+  - Início: pontuação e progresso lado a lado, funil em largura total e os atalhos em duas colunas.
+  - Hoje e Recorrências: cada estabelecimento ocupa a largura toda, com as informações à esquerda e uma coluna de ações à direita (uma ação principal em cima e Ligar, Maps e Waze embaixo).
+  - Resumo do dia: números e gráfico numa coluna fixa à esquerda, e a lista rolando à direita. O título fica parado enquanto a lista rola.
+  - Visita: contexto e fornecedores à esquerda; resultado, turno e nota à direita. A barra "Registrar visita" começa depois da sidebar.
+- **Visual:** fundo com gradiente em tons de azul. Os cartões têm efeito de vidro (fundo translúcido, desfoque, borda clara). Os cartões com cor própria (pontuação e meta batida) ficam sólidos.
+- **Acessibilidade do visual:** o texto mantém contraste mínimo de 4,5:1. Com transparência reduzida no sistema, o vidro perde só o desfoque e mantém a cor.
+
 ---
 
 ## 3. Regras de funil e status
@@ -219,6 +230,9 @@ Urgência do acompanhamento (dias até o fim da janela):
 - **Sem separação de "decisor ausente".** O resultado "ausente" não diferencia ponto aberto sem decisor de ponto fechado.
 - **Sem cobertura de território.** Não há regra de quais bairros cada vendedor atende.
 - **Dados de exemplo fictícios.** Os estabelecimentos da seed têm CNPJs e horários fictícios e servem só para teste.
+- **Janela de recorrência diverge do case.** O case fala em 3 compras em até 45 dias. O protótipo usa uma janela de 15 dias, renovada a cada venda. A definição precisa ser alinhada antes da avaliação.
+- **Nome do vendedor de demonstração.** A seed foi alterada para "Vinicius", mas o banco ainda mostra o nome anterior até o próximo reset com a seed.
+- **Pesquisa de campo pendente.** Ainda não há visitas reais registradas em `CAMPO.md`.
 - **Voz.** A nota por voz depende do Web Speech API, que funciona no Chrome. Nos outros navegadores, a digitação é o caminho.
 - **Offline.** O app é instalável (PWA), mas não tem fila de sincronização: sem internet, o registro não é salvo.
 
@@ -226,7 +240,8 @@ Urgência do acompanhamento (dias até o fim da janela):
 
 ## 13. Próximos passos sugeridos
 
-1. Autenticação e perfis (vendedor e gestor).
+1. Alinhar a janela de recorrência com o case (15 ou 45 dias).
+2. Autenticação e perfis (vendedor e gestor).
 2. Restringir os endpoints de alteração manual (pontuação e status) ao perfil de gestor, com registro de quem alterou.
 3. Separar visita planejada de efetiva e medir a conversão de cada etapa do funil.
 4. Definir cobertura por território.

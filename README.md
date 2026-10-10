@@ -5,7 +5,7 @@ Este é um protótipo funcional de uma plataforma de vendedor para field sales B
 ## 📋 Documentação
 
 - **[PLAYBOOK.md](./PLAYBOOK.md)** — "Um dia na vida" do vendedor com a plataforma
-- **[DIARIO-BORDO.md](./DIARIO-BORDO.md)** — Decisões, tempo gasto, aprendizados
+- **[DOCUMENTACAO.md](./DOCUMENTACAO.md)** — Funcionalidades e regras do projeto
 - **[case_revops_praso.md](./case_revops_praso.md)** — Case original (requirements)
 - **[00-pesquisa-referencias.md](./00-pesquisa-referencias.md)** — Pesquisa secundária (cases, GitHub, Reddit)
 

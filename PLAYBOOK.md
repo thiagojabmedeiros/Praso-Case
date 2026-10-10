@@ -1,221 +1,178 @@
 # Playbook: Um Dia na Vida do Vendedor Praso
 
+Este playbook descreve como o vendedor usa a plataforma ao longo de um dia de campo. Os nomes das telas e as regras são os do protótipo atual. Os números de impacto são **hipóteses a validar em campo**, não resultados medidos (ver a seção "O que ainda é hipótese").
+
+---
+
 ## Contexto Executivo
 
-A plataforma Praso resolve dois problemas críticos do vendedor de campo:
-1. **Registro lento** — reduz de ~5 minutos por visita para ~1 minuto (botão de voz, geo automática)
-2. **Falta de contexto** — cartão pré-visita mostra fornecedor, tipo de documento, potencial antes de entrar
+A plataforma resolve três problemas do vendedor de campo:
+1. **Registro lento:** o vendedor levava vários minutos por visita no Salesforce. Aqui, o registro é um toque (resultado) mais uma nota por voz ou digitada.
+2. **Falta de contexto:** antes de entrar, ele não sabia fornecedor, melhor horário nem o que foi combinado antes. O cartão da visita mostra isso.
+3. **Recorrência sem acompanhamento:** o cliente que comprou uma vez se perdia. A tela de Recorrências mostra o prazo e o que falta para a meta.
 
-O resultado: conversão de **visita planejada → cadastro** sobe 15-20%, e **recorrência** (3ª compra em 45 dias) sobe 25% porque o vendedor consegue acompanhar.
-
----
-
-## 7h00 — Saída de Casa
-
-**Que o vendedor vê:**
-- Tela inicial com dois atalhos: "Carteira do Dia" e "Acompanhamento"
-
-**O que ele faz:**
-- Abre a app no celular
-- Clica em **"Carteira do Dia"**
-
-**Por quê:**
-- Tira 30 segundos da rotina manual de verificar spreadsheet ou CRM
-- A lista já vem priorizada (leads de alto potencial primeiro)
+A meta do case é a **3ª compra autônoma**. No protótipo, a janela é de **15 dias renovada a cada venda**: cada compra precisa ter a seguinte em até 15 dias. (O case fala em 45 dias; ver a seção de decisões.)
 
 ---
 
-## 8h00 — 1ª Visita: Lead em Alto Potencial
+## 7h00: Abrir o App
 
-### Antes de Sair do Carro
+**Tela: Início**
+- **Sua pontuação:** o total de pontos do dia a dia.
+- **Hoje: X de Y visitas feitas:** o progresso do dia, com a barra.
+- **Seu funil:** quantos leads, oportunidades e clientes ele tem.
+- **Atalhos:** "Carteira do dia" (aba Hoje) e "Recorrência".
 
-**Tela: Carteira do Dia**
-- Lista mostra: "Restaurante Bom Paladar" (restaurante, alto potencial, lead)
-- Chip visual: "🔴 Lead"
-- Botão "Mapas" abre Google Maps direto para o endereço
+**O que ele faz:** abre o app e toca em **Carteira do dia**.
 
-**O que muda:** Vendedor não precisa copiar o endereço para o Maps — um clique.
-
-**Clica em "Restaurante Bom Paladar"**
-
-### Chegando no Local
-
-**Tela: Pré-Visita (cartão de contexto)**
-
-O vendedor vê em 15 segundos:
-- **Segmento:** restaurante
-- **Fornecedor atual:** Fornecedor X (AÇÃO: sabe de quem está tirando a venda)
-- **Tipo:** Não-MEI (vale 1 ponto na pontuação)
-- **Melhor horário:** 14:00 (sabe que veio cedo, pode voltar mais tarde)
-- **Nota anterior:** "Proprietário atento a preço" (sabe o que tentar)
-
-**Pressiona: "Capturar Localização"**
-- Geo automático fica registrado (±15m de acurácia)
-- Nunca precisa digitar endereço
-
-**Clica em "Iniciar Visita"**
-
-### Dentro do Restaurante (5 minutos de interação)
-
-Vendedor **cadastra o restaurante na app** em nome do proprietário, faz a 1ª compra teste.
-
-Volta para o carro.
-
-### Saindo do Carro (1 minuto de registro)
-
-**Tela: Resultado da Visita**
-
-Botões visuais (emojis + cores):
-- ✅ Cadastrou
-- ❌ Recusou
-- 🚪 Fechado
-- 😴 Ausente
-- 🛒 Compra
-- 📞 Acompanhamento
-
-**Clica: ✅ Cadastrou**
-
-**Campo de nota:** "Interessado. Combinou de voltar 5ª para mostrar sortimento"
-
-**Botão de Voz:** 🎤 segura = "Proprietário muito atento a preço, quer margem de 20%"
-- A app reconhece e transcreve em português
-- Fallback: pode digitar à mão
-
-**Pressiona: "Registrar Visita"**
-
-### O Que Aconteceu Diferente (vs. Salesforce hoje)
-- ❌ Não digitou endereço (era manual antes)
-- ❌ Não passou 2 minutos procurando "qual era o status" (opções visuais agora)
-- ❌ Não digitou nota longa (voz faz em 20 segundos)
-- ✅ Sabe exato onde esteve (GPS)
-- ✅ Sabe exato quando (data/hora automática)
+**Por quê:** a lista já vem em ordem de prioridade. Ele não precisa montar a rota de cabeça.
 
 ---
 
-## 9h30 — Acompanhamento: Cliente em Risco
+## 8h00: 1ª Visita, Lead de Alto Potencial
 
-Vendedor abre a app e clica em **"Acompanhamento (Recorrência)"**.
+### Antes de sair do carro
 
-**Tela: Carteira de Recorrência**
+**Tela: Hoje, aba Pendentes**
+- Cada card mostra a posição, o nome, o bairro e o segmento, o status (Lead), o melhor horário e os motivos da prioridade (por exemplo, "alto potencial" e "nunca visitado").
+- Botões: **Iniciar visita**, **Ligar**, **Maps** e **Waze**.
+- Filtros por bairro e por segmento deixam ele ver só a região onde está.
 
-Mostra:
-- **Pizzaria Massa e Arte:** 🔥 Crítica (faltam 3 dias para vencer a janela de 45 dias)
-  - Compras: 2/3 (progresso visual)
-  - Dias: 3 restantes
-  - Botões: 📞 Contato | 🛒 Compra
+**Exemplo:** "Bar da Galinha", Candeias, lead de alto potencial, nunca visitado.
 
-### Conversão: Acompanhamento → 3ª Compra
+**Clica em Maps ou Waze:** a rota abre direto no app de navegação.
 
-Vendedor clica em **📞 Contato**.
+### Chegando no local
 
-"Oi, como está? Vi que você fez umas compras legais na Praso... deixei umas ofertas legais essa semana, quer que eu mande?" 
+**Tela: Visita (contexto)**
+- Telefone, endereço, melhor horário e notas de contexto (informações já cadastradas ou de visitas anteriores).
+- Botões de Maps e Waze, caso ele tenha de encontrar o ponto.
 
-Proprietário: "Tá bom, manda aí"
+**Ele faz:** entra no estabelecimento.
 
-Vendedor volta à app e clica em **🛒 Registra Compra** (simulando que o proprietário fez a 3ª compra autônoma).
+### Dentro do estabelecimento
 
-**O sistema:**
-- Detecta que a 3ª compra foi atingida
-- Remove da carteira de acompanhamento
-- **Registra +3 pontos na pontuação do vendedor** (alto potencial = 3 pts)
-- Muda status para "cliente recorrente"
+Ele conversa com o dono. Se o dono aceita, ele cadastra o estabelecimento na visita (o resultado "Cadastrou"). Se houver fornecedor atual, ele registra a distribuidora e a categoria.
 
-### O Que Muda (vs. Hoje)
-- ❌ Antes: vendedor abria Salesforce e passava 3 minutos procurando "qual era a data da 1ª compra" e "quantas já fez"
-- ✅ Agora: a app mostra tudo (dias, compras, urgência) em cores (verde/amarelo/vermelho)
-- ✅ Botões de ação rápida (não precisa criar um novo "task" ou "log" — apenas toca)
+Os fornecedores que ele digita **ficam como rascunho na tela**. Nada é salvo até ele tocar em **Registrar visita**. Se sair sem registrar, nada fica gravado.
 
----
+### Saindo do carro
 
-## 10h30 — Múltiplas Visitas: Otimização de Rota
+**Ainda na tela de Visita:**
+- **Resultado:** cadastrou, compra, acompanhar, ausente, fechado ou recusou.
+- **Compra:** se houve, informa o valor e marca se foi "comprou sozinho, sem apoio do vendedor".
+- **Próximo contato:** a data combinada para voltar.
+- **Melhor turno:** manhã, tarde ou noite.
+- **Nota:** digitada ou ditada por voz (no Chrome).
 
-Vendedor vê 8 leads/oportunidades na carteira.
+Toca em **Registrar visita**. A visita, a compra e os fornecedores são gravados juntos. Se algo falhar, nada é gravado.
 
-**Tela: Carteira do Dia (lista)** — já vem **priorizada por bairro** e **potencial**.
+### O que muda em relação ao Salesforce
 
-Em vez de planejar rota manualmente:
-- Restaurantes de alto potencial no Centro (próximos geograficamente)
-- Depois bairro novo
-
-**Cada clique em um estabelecimento:**
-- 15 segundos vendo contexto
-- 5 minutos na loja
-- 1 minuto registrando resultado + nota
-
-vs. antes (Salesforce):
-- 2-3 minutos manualmente buscando info do lead
-- 5 minutos na loja
-- 5-7 minutos preenchendo form de "activity" no Salesforce
-
-**Ganho: 6-7 minutos por visita × 8-10 visitas/dia = ~60 minutos liberados para vendas reais.**
+- Não digita endereço: o Maps e o Waze já têm a localização.
+- Não procura "qual era o status": o resultado é um toque.
+- Não escreve nota longa: pode ditar.
+- A visita fica com data e hora automáticas.
 
 ---
 
-## 17h00 — Encerramento do Dia
+## 9h30: Depois da visita, a aba Visitados
 
-Vendedor abre app e vê:
-
-**Dashboard de hoje (hipotético):**
-- Visitas planejadas: 10
-- Visitas efetivas: 9
-- Cadastros: 3
-- Compras registradas: 2
-- Contatos de acompanhamento: 4
-- **Pontuação do dia: +5 pontos**
-
-Não precisa preencher relatório — tudo foi registrado nas visitas.
+Quando ele volta à lista, a visita já feita sai de Pendentes e aparece em **Visitados**, com o resultado da visita ("Cadastrou", "Compra" etc.). Cada card de visitado tem:
+- **Ver o que foi feito hoje:** abre um resumo somente leitura (cadastro, visitas do dia, fornecedores de cada visita, total de compras). Não tem como registrar nada nessa tela.
+- **Ligar, Maps e Waze** continuam disponíveis.
 
 ---
 
-## Por Que Funciona: Três Mudanças Críticas
+## 10h30: Acompanhamento de recorrência
 
-### 1. **Registro Rápido = Mais Tempo em Vendas**
-- Voz (fallback texto) vs. formas longas
-- Geo automática vs. digitação
-- Chips de resultado vs. dropdowns
-- **Impacto:** +20% tempo em conversa vs. +15% tempo em burocracia
+Ele abre **Recorrência**. Para cada cliente, a tela mostra:
+- **Compras autônomas:** quantas das 3 ele já tem.
+- **Prazo:** quantos dias faltam (ou quantos dias ele já passou).
+- **Urgência:** vencida (vermelho), crítica (até 7 dias) ou no prazo.
+- **Próxima pendência:** a data limite para a próxima compra.
 
-### 2. **Contexto Antes de Entrar = Conversão**
-- Proprietário não é abordado "frio"
-- Vendedor já sabe fornecedor, sabe tipo de documento (MEI vs. Não-MEI → abordagem diferente)
-- Sabe melhor horário (volta nos horários de pico, não em off-peak)
-- **Impacto:** lead → cadastro sobe de ~30% para ~45% (15 p.p.)
+**Ações:** **Visitar** (fica como "Visitado hoje" depois de uma visita no dia) e **Ligar**.
 
-### 3. **Acompanhamento Visível = Recorrência**
-- Antes: vendedor decorava "acho que essa pessoa já comprou uma vez"
-- Agora: app mostra "2 compras, faltam 3 dias, botão de contato"
-- Gamificação: pontos aumentam quando atinge 3ª compra
-- **Impacto:** cadastro → recorrência sobe de ~35% para ~50-60% (15-25 p.p.)
+**Clientes já visitados hoje descem para o fim da lista,** para os que ainda precisam de atenção ficarem em cima.
+
+Quando o cliente faz a 3ª compra autônoma no ciclo, a meta é batida: ele sai do acompanhamento e ganha 3 pontos.
 
 ---
 
-## Trade-offs Documentados (Para Avaliadores)
+## 12h00 e 14h00: Registrar a compra e o retorno
 
-Esta versão do protótipo foca em experiência do usuário (vendedor) acima de:
+Um cliente de recorrência liga e diz que vai pedir. Ele registra a visita com resultado **Compra**, informa o valor e marca se foi autônoma. Se a compra for a 3ª do ciclo, a meta é batida, e o sistema lança os 3 pontos.
 
-- **Sem autenticação:** vendedor único (seller-1). Em produção: diferentes vendedores por cobertura territorial.
-- **Sem banco de dados persistente:** dados em memória, resetam ao reiniciar. Em produção: Postgres via Prisma.
-- **Sem mapas próprios:** deep links para Google Maps. Em produção: MapLibre + otimização de rota (OSRM).
-- **Offline real mencionado, não implementado:** manifest PWA permite "adicionar à tela inicial", mas não há service worker de cache agressivo. Em produção: Dexie.js + fila de sync.
-- **Voz simples:** Web Speech API (fallback texto). Em produção: gravação de áudio em chunks, com transcrição de IA.
-
-Essas escolhas **economizaram ~8 horas de tempo de desenvolvimento** sem prejudicar a validação de produto. O protótipo prova que:
-1. Registro rápido (geo + voz) resolve uma dor real
-2. Contexto pré-visita aumenta conversão
-3. Acompanhamento visual e em tempo real motiva recorrência
+Quando o cliente pede para voltar em outro dia, ele informa a data de **Próximo contato**. A data aparece no card da carteira e influencia a ordem da lista.
 
 ---
 
-## Métrica de Sucesso: 3ª Compra em 45 Dias
+## 17h00: Fechar o dia
 
-A plataforma foi desenhada em torno dessa métrica do case.
+**Tela: Resumo do dia** (botão "Ver resumo do dia" na aba Visitados)
+
+- **Insight:** frase com o total de visitas e de compras ("Você visitou 5 de 12 estabelecimentos e fechou 3 compras, somando R$ 8.200,00").
+- **Cards:** Já visitados, Pendentes e Compras (com o valor).
+- **Gráfico de barras:** quantas visitas tiveram cada resultado.
+- **Lista por estabelecimento:** horário e ação de cada visita, valor de compra, notas, fornecedores cadastrados e data de retorno.
+- **Copiar resumo:** texto pronto para colar no WhatsApp ou no e-mail do gestor.
+
+Ele não precisa preencher relatório: o resumo sai das visitas registradas.
+
+---
+
+## Por que o fluxo ajuda (hipóteses)
+
+As três escolhas centrais do produto são estas. O efeito real só se confirma em campo.
+
+### 1. Registro rápido
+- Um toque para o resultado, voz ou texto para a nota.
+- Localização automática, sem digitar endereço.
+- **Hipótese:** mais tempo com o cliente e menos tempo digitando.
+
+### 2. Contexto antes de entrar
+- O vendedor sabe o status, o melhor horário, os fornecedores e as notas de visitas anteriores.
+- **Hipótese:** menos abordagens frias e mais conversão de visita para cadastro.
+
+### 3. Acompanhamento visível
+- Prazo, compras feitas e urgência ficam na mesma tela, com ação direta.
+- **Hipótese:** mais clientes chegando à 3ª compra autônoma.
+
+---
+
+## Decisões e limitações do protótipo
+
+- **Sem login:** o app usa um vendedor fixo (`seller-1`, nome de demonstração). Autenticação e perfis de gestor ficam para depois.
+- **Banco:** PostgreSQL no Supabase, com migrations. Os dados de exemplo vêm da seed (estabelecimentos de Candeias e Piedade, em Jaboatão dos Guararapes).
+- **Mapas:** deep links para Google Maps e Waze. Não há mapa próprio.
+- **Offline:** o app é instalável (PWA), mas não tem fila de sincronização. Sem internet, o registro não é salvo.
+- **Voz:** Web Speech API, que funciona no Chrome. Nos outros navegadores, a digitação é o caminho.
+- **Autonomia da compra:** é declarada pelo vendedor. Ainda não há integração com a plataforma de pedidos.
+- **Churn automático:** cliente sem compra há mais de 120 dias vira churn.
+- **Pontuação:** cadastro de alto potencial vale 3; MEI, 0,5; Não-MEI, 1; recorrência, 3.
+
+---
+
+## O que ainda é hipótese
+
+- Os percentuais de melhoria de conversão e de recorrência são estimativas, não resultados.
+- O tempo economizado por visita (de ~5 para ~1 minuto) precisa ser medido com vendedores reais.
+- Os pesos da prioridade da carteira são uma primeira aposta, para ajustar com dados de campo.
+- Visitas de campo em Recife ainda não foram feitas. O roteiro e o registro estão em `CAMPO.md`.
+
+---
+
+## Métrica de sucesso
+
+A meta de negócio é a **3ª compra autônoma** do cliente. O protótipo acompanha essa meta em um ciclo em que cada compra precisa ter a seguinte em até 15 dias.
 
 **Fluxo:**
-1. Visita → Cadastro (melhorado com contexto pré-visita)
-2. Cadastro → 1ª Compra (com apoio do vendedor)
-3. 1ª Compra → 3ª Compra em 45 dias (acompanhamento visual + pontos)
+1. Visita → cadastro (contexto antes de entrar).
+2. Cadastro → 1ª compra (com o apoio do vendedor).
+3. 1ª compra → 3ª compra autônoma (acompanhamento visual e pontos).
 
-**Cada etapa tem uma funcionalidade que a facilita:**
-- Etapa 1: cartão de contexto (melhor hora, fornecedor, potencial)
-- Etapa 2: registro rápido (1 clique + voz)
-- Etapa 3: dashboard de acompanhamento (dias restantes, compras feitas, botões de ação)
+**Funcionalidade de apoio em cada etapa:**
+- Etapa 1: cartão de contexto e registro rápido.
+- Etapa 2: registro da compra com valor e fornecedores.
+- Etapa 3: tela de Recorrência, com prazo, urgência e ação direta.
