@@ -140,13 +140,13 @@ export default function RecorrenciasPage() {
 
       {!carregando && itens.length > 0 && (
         <div className="space-y-4 p-4 lg:p-8">
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-3 gap-2 lg:max-w-4xl">
             <StatTile valor={emAndamento} rotulo="Em andamento" tom="primary" />
             <StatTile valor={urgentes} rotulo="Urgentes" tom="danger" />
             <StatTile valor={metas} rotulo="Metas batidas" tom="success" />
           </div>
 
-          <ul className="grid gap-3 lg:grid-cols-2 lg:items-start lg:gap-4">
+          <ul className="space-y-3 lg:max-w-4xl lg:space-y-4">
             {/* Já visitados hoje descem para o fim; a ordem de urgência se mantém dentro de cada grupo. */}
             {[...itens]
               .sort((a, b) => Number(visitadosHoje.has(a.establishmentId)) - Number(visitadosHoje.has(b.establishmentId)))
