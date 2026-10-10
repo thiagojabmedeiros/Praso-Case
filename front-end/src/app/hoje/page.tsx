@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { CalendarCheck2, CalendarX2, Clock, MapPin, MapPinOff, Phone } from 'lucide-react';
+import { CalendarCheck2, CalendarX2, Clock, FileText, MapPin, MapPinOff, Phone } from 'lucide-react';
 import { BotaoGoogleMaps, BotaoWaze } from '@/components/botoes-navegacao';
 import { Recomendacao } from '@/lib/types';
 import { recommendationsAPI } from '@/lib/api';
@@ -132,6 +132,13 @@ export default function HojePage() {
               );
             })}
           </div>
+
+          {aba === 'visitados' && visitados.length > 0 && (
+            <ButtonLink href="/hoje/resumo" variante="outline" cheio>
+              <FileText aria-hidden="true" className="size-4" />
+              Ver resumo do dia
+            </ButtonLink>
+          )}
 
           {semLocalizacao && (
             <p className="flex items-center gap-2 rounded-xl bg-muted px-3 py-2 text-sm text-muted-foreground">
