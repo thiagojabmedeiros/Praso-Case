@@ -1,13 +1,23 @@
-import { FollowUp, Potential } from '../types';
+import { EstablishmentStatus, FollowUp, Potential } from '../types';
 
 // Pesos da pontuação (soma = 1). Primeira aposta; ajustar com os dados de campo.
 export const PESOS = {
-  urgencia: 0.3,
-  potencial: 0.2,
-  horario: 0.2,
+  urgencia: 0.25,
+  potencial: 0.15,
+  horario: 0.15,
   recencia: 0.15,
   distancia: 0.15,
+  cadastro: 0.15,
 } as const;
+
+// Quanto o estabelecimento já está ligado à Praso. Cliente já compra; oportunidade já
+// se cadastrou; churn já foi cliente; lead nunca se cadastrou.
+const CADASTRO: Record<EstablishmentStatus, number> = {
+  cliente: 1,
+  oportunidade: 0.5,
+  churn: 0.5,
+  lead: 0,
+};
 
 // Distância em linha reta: 0,5 km ou menos vale 1; 8 km ou mais vale 0.
 const DISTANCIA_CHEIA_KM = 0.5;
@@ -56,6 +66,7 @@ const HORARIO_ZERO_MIN = 180;
 const OFFSET_RECIFE_HORAS = 3;
 
 export interface ScoreInput {
+  status: EstablishmentStatus;
   potencial: Potential;
   melhorHorario: string | null;
   urgencia: FollowUp['urgencia'] | null; // null: fora da carteira de recorrência
@@ -101,13 +112,15 @@ export function pontuar(input: ScoreInput, agora: Date): ScoreResult {
   const horario = componenteHorario(input.melhorHorario, agora);
   const recencia = componenteRecencia(input.diasDesdeUltimaVisita);
   const distancia = componenteDistancia(input.distanciaKm ?? null);
+  const cadastro = CADASTRO[input.status];
 
   const score =
     PESOS.urgencia * urgencia +
     PESOS.potencial * potencial +
     PESOS.horario * horario +
     PESOS.recencia * recencia +
-    PESOS.distancia * distancia;
+    PESOS.distancia * distancia +
+    PESOS.cadastro * cadastro;
 
   const motivos: string[] = [];
 
@@ -120,6 +133,9 @@ export function pontuar(input: ScoreInput, agora: Date): ScoreResult {
   }
 
   if (input.potencial === 'alto') motivos.push('alto potencial');
+
+  if (input.status === 'cliente') motivos.push('cliente na Praso');
+  else if (input.status === 'oportunidade') motivos.push('já cadastrado, ainda não comprou');
 
   if (input.melhorHorario && horario >= 0.5) {
     motivos.push(`horário ideal por volta de ${input.melhorHorario}`);

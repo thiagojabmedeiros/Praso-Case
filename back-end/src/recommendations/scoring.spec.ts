@@ -65,6 +65,22 @@ describe('scoring', () => {
     });
   });
 
+  describe('fator cadastro', () => {
+    it('cliente e oportunidade pontuam mais que lead, com tudo o resto igual', () => {
+      const base = { potencial: 'normal' as const, melhorHorario: null, urgencia: null, diasRestantes: null, diasDesdeUltimaVisita: null };
+      const lead = pontuar({ ...base, status: 'lead' }, AGORA_18H).score;
+      const oportunidade = pontuar({ ...base, status: 'oportunidade' }, AGORA_18H).score;
+      const cliente = pontuar({ ...base, status: 'cliente' }, AGORA_18H).score;
+      expect(oportunidade).toBeGreaterThan(lead);
+      expect(cliente).toBeGreaterThan(oportunidade);
+    });
+
+    it('explica o motivo para estabelecimentos já cadastrados', () => {
+      const r = pontuar({ status: 'oportunidade', potencial: 'normal', melhorHorario: null, urgencia: null, diasRestantes: null, diasDesdeUltimaVisita: null }, AGORA_18H);
+      expect(r.motivos).toContain('já cadastrado, ainda não comprou');
+    });
+  });
+
   describe('componenteRecencia', () => {
     it('é 1 se nunca visitado', () => {
       expect(componenteRecencia(null)).toBe(1);
@@ -83,11 +99,11 @@ describe('scoring', () => {
   describe('pontuar', () => {
     it('recorrência vencida com alto potencial fica acima de lead normal sem histórico', () => {
       const vencido = pontuar(
-        { potencial: 'alto', melhorHorario: null, urgencia: 'vencida', diasRestantes: -5, diasDesdeUltimaVisita: 3 },
+        { status: 'cliente', potencial: 'alto', melhorHorario: null, urgencia: 'vencida', diasRestantes: -5, diasDesdeUltimaVisita: 3 },
         AGORA_18H,
       );
       const lead = pontuar(
-        { potencial: 'normal', melhorHorario: null, urgencia: null, diasRestantes: null, diasDesdeUltimaVisita: null },
+        { status: 'lead', potencial: 'normal', melhorHorario: null, urgencia: null, diasRestantes: null, diasDesdeUltimaVisita: null },
         AGORA_18H,
       );
       expect(vencido.score).toBeGreaterThan(lead.score);
@@ -95,7 +111,7 @@ describe('scoring', () => {
 
     it('gera motivos legíveis para a tela', () => {
       const r = pontuar(
-        { potencial: 'alto', melhorHorario: '18:00', urgencia: 'critica', diasRestantes: 4, diasDesdeUltimaVisita: null },
+        { status: 'lead', potencial: 'alto', melhorHorario: '18:00', urgencia: 'critica', diasRestantes: 4, diasDesdeUltimaVisita: null },
         AGORA_18H,
       );
       expect(r.motivos).toEqual([
@@ -108,7 +124,7 @@ describe('scoring', () => {
 
     it('score fica entre 0 e 1', () => {
       const r = pontuar(
-        { potencial: 'alto', melhorHorario: '18:00', urgencia: 'vencida', diasRestantes: -1, diasDesdeUltimaVisita: 30 },
+        { status: 'lead', potencial: 'alto', melhorHorario: '18:00', urgencia: 'vencida', diasRestantes: -1, diasDesdeUltimaVisita: 30 },
         AGORA_18H,
       );
       expect(r.score).toBeGreaterThanOrEqual(0);

@@ -60,6 +60,7 @@ export class RecommendationsService {
 
         const { score, motivos } = pontuar(
           {
+            status: establishment.status,
             potencial: establishment.potencial,
             melhorHorario: establishment.melhorHorario,
             urgencia: followup?.urgencia ?? null,
