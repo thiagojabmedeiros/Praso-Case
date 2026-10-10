@@ -164,12 +164,6 @@ export default function VisitaPage() {
               </span>
             </p>
             <p>
-              <span className="text-slate-600">Tipo de documento:</span>{' '}
-              <span className={establishment.tipoDoc ? 'font-medium' : 'font-medium text-slate-500'}>
-                {establishment.tipoDoc ?? 'a levantar em campo'}
-              </span>
-            </p>
-            <p>
               <span className="text-slate-600">Melhor horário:</span>{' '}
               <span className={establishment.melhorHorario ? 'font-medium' : 'font-medium text-slate-500'}>
                 {establishment.melhorHorario ?? 'a levantar em campo'}
