@@ -21,6 +21,7 @@ export interface Establishment {
   potencial: Potential;
   status: EstablishmentStatus;
   endereco: string;
+  telefone?: string | null;
   latitude?: number | null;
   longitude?: number | null;
   bairro: string;
@@ -41,6 +42,7 @@ export interface Visit {
   resultado: VisitResult;
   geo?: Geo;
   nota: string;
+  proximoContato?: string | null;
   createdAt: string;
 }
 

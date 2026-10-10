@@ -23,6 +23,7 @@ export default function VisitaPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedResult, setSelectedResult] = useState<VisitResult | null>(null);
   const [note, setNote] = useState('');
+  const [proximoContato, setProximoContato] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [useVoice, setUseVoice] = useState(false);
   const [listeningVoice, setListeningVoice] = useState(false);
@@ -85,6 +86,7 @@ export default function VisitaPage() {
         tipo: 'efetiva',
         resultado: selectedResult,
         nota: note,
+        proximoContato: proximoContato ? new Date(`${proximoContato}T12:00:00`).toISOString() : null,
         createdAt: new Date().toISOString(),
       };
 
@@ -142,16 +144,36 @@ export default function VisitaPage() {
               <span className="font-medium">{establishment.segmento}</span>
             </p>
             <p>
+              <span className="text-slate-600">Telefone:</span>{' '}
+              {establishment.telefone ? (
+                <a href={`tel:${establishment.telefone.replace(/D/g, '')}`} className="font-medium text-blue-600">
+                  {establishment.telefone}
+                </a>
+              ) : (
+                <span className="font-medium text-slate-500">a levantar em campo</span>
+              )}
+            </p>
+            <p>
+              <span className="text-slate-600">Endereço:</span>{' '}
+              <span className="font-medium">{establishment.endereco}</span>
+            </p>
+            <p>
               <span className="text-slate-600">Fornecedor atual:</span>{' '}
-              <span className="font-medium">{establishment.fornecedorAtual}</span>
+              <span className={establishment.fornecedorAtual ? 'font-medium' : 'font-medium text-slate-500'}>
+                {establishment.fornecedorAtual ?? 'a levantar em campo'}
+              </span>
             </p>
             <p>
               <span className="text-slate-600">Tipo de documento:</span>{' '}
-              <span className="font-medium">{establishment.tipoDoc}</span>
+              <span className={establishment.tipoDoc ? 'font-medium' : 'font-medium text-slate-500'}>
+                {establishment.tipoDoc ?? 'a levantar em campo'}
+              </span>
             </p>
             <p>
               <span className="text-slate-600">Melhor horário:</span>{' '}
-              <span className="font-medium">{establishment.melhorHorario}</span>
+              <span className={establishment.melhorHorario ? 'font-medium' : 'font-medium text-slate-500'}>
+                {establishment.melhorHorario ?? 'a levantar em campo'}
+              </span>
             </p>
             {establishment.notasContexto && (
               <p>
@@ -160,6 +182,18 @@ export default function VisitaPage() {
               </p>
             )}
           </div>
+          <a
+            href={
+              establishment.latitude != null && establishment.longitude != null
+                ? `https://waze.com/ul?ll=${establishment.latitude},${establishment.longitude}&navigate=yes`
+                : `https://maps.google.com/?q=${encodeURIComponent(establishment.endereco)}`
+            }
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-3 block w-full text-center bg-slate-200 hover:bg-slate-300 text-slate-800 text-sm py-2 rounded transition"
+          >
+            {establishment.latitude != null ? 'Abrir no Waze' : 'Abrir no Mapas'}
+          </a>
         </div>
 
         {/* Resultado da visita */}
@@ -183,6 +217,19 @@ export default function VisitaPage() {
         </div>
 
         {/* Nota rápida */}
+        {(selectedResult === 'cadastrou' || selectedResult === 'em-acompanhamento') && (
+          <div className="bg-white border border-slate-200 rounded-lg p-4">
+            <h2 className="font-semibold text-slate-900 mb-3">📅 Próximo contato</h2>
+            <input
+              type="date"
+              value={proximoContato}
+              onChange={(e) => setProximoContato(e.target.value)}
+              className="w-full border border-slate-300 rounded px-3 py-2 text-sm"
+            />
+            <p className="text-xs text-slate-500 mt-2">Quando você combinou de voltar ou de acompanhar.</p>
+          </div>
+        )}
+
         <div className="bg-white border border-slate-200 rounded-lg p-4">
           <h2 className="font-semibold text-slate-900 mb-3">📝 Nota Rápida</h2>
           <textarea
