@@ -171,13 +171,20 @@ export default function ResumoDoDiaPage() {
   };
 
   return (
-    <>
+    // Desktop (lg): página com a altura da janela; o título fica parado e só a área abaixo dele rola.
+    // O -mb cancela o padding inferior do layout para não surgir uma segunda barra de rolagem.
+    // No mobile nada muda: o cabeçalho rola junto com a página.
+    <div className="lg:-mb-10 lg:flex lg:h-dvh lg:flex-col">
+      <div className="lg:shrink-0">
       <PageHeader
         titulo="Resumo do dia"
         subtitulo={data ? new Date(`${data}T12:00:00`).toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }) : 'Hoje'}
         voltar={{ href: '/hoje', rotulo: 'Voltar para Hoje' }}
       />
+      </div>
 
+      {/* Área rolável (desktop): os cards passam por baixo do título com um leve esmaecido na borda de cima. */}
+      <div className="lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:[mask-image:linear-gradient(to_bottom,transparent,black_20px)]">
       {carregando && <ListaSkeleton itens={3} altura="h-40" />}
       {erro && <ErroAviso mensagem={erro} />}
 
@@ -191,7 +198,7 @@ export default function ResumoDoDiaPage() {
 
       {!carregando && !erro && linhas.length > 0 && (
         <div className="space-y-4 p-4 lg:grid lg:grid-cols-5 lg:items-start lg:gap-6 lg:space-y-0 lg:p-8">
-          <div className="space-y-4 lg:sticky lg:top-24 lg:col-span-2">
+          <div className="space-y-4 lg:sticky lg:top-8 lg:col-span-2">
           <p className="rounded-xl bg-primary-soft px-4 py-3 text-sm font-semibold text-primary-text">
             {`Você visitou ${totais.jaVisitados} de ${totais.jaVisitados + totais.pendentes} estabelecimentos`}
             {totais.compras > 0
@@ -293,6 +300,7 @@ export default function ResumoDoDiaPage() {
           </div>
         </div>
       )}
-    </>
+      </div>
+    </div>
   );
 }
