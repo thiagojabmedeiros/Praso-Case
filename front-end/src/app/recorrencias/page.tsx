@@ -163,7 +163,7 @@ export default function RecorrenciasPage() {
 
               return (
                 <li key={item.establishmentId} className="animate-fade-up" style={{ animationDelay: `${Math.min(i, 5) * 45}ms` }}>
-                  <Card className={cn('space-y-3', item.metaBatida && 'border-success/40 bg-success-soft/40')}>
+                  <Card solido={item.metaBatida} className={cn('space-y-3', item.metaBatida && 'border-success/40 bg-success-soft/40')}>
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <Link href={`/cliente/${item.establishmentId}`} className="block">

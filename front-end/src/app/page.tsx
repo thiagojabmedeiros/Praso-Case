@@ -56,7 +56,7 @@ export default function Home() {
 
       <div className="flex flex-col gap-4 p-4 lg:grid lg:grid-cols-6 lg:gap-6 lg:p-8">
         {/* Pontuação */}
-        <Card className="animate-fade-up flex items-center gap-4 bg-primary p-5 text-on-primary border-transparent lg:col-span-2">
+        <Card solido className="animate-fade-up flex items-center gap-4 bg-primary p-5 text-on-primary border-transparent lg:col-span-2">
           <div
             className="flex size-14 shrink-0 animate-pop items-center justify-center rounded-2xl bg-white/15"
             style={{ animationDelay: '120ms' }}
@@ -77,7 +77,7 @@ export default function Home() {
         </Card>
 
         {/* Progresso de hoje: o KPI principal do dia, com comparação contra a carteira */}
-        <Card vidro className="animate-fade-up space-y-3 lg:col-span-4 lg:self-stretch" style={{ animationDelay: '90ms' }}>
+        <Card className="animate-fade-up space-y-3 lg:col-span-4 lg:self-stretch" style={{ animationDelay: '90ms' }}>
           {carregando ? (
             <Skeleton className="h-12 w-full" />
           ) : (
