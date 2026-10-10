@@ -5,23 +5,23 @@
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "theme_color": "#3b61ba",
+  "theme_color": "#2563eb",
   "background_color": "#f8fafc",
   "icons": [
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%233b61ba' width='192' height='192'/><text x='96' y='130.56' font-size='105.60000000000001' font-weight='800' font-family='sans-serif' fill='white' text-anchor='middle'>P</text></svg>",
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%232563eb' width='192' height='192'/><text x='96' y='130.56' font-size='105.60000000000001' font-weight='800' font-family='sans-serif' fill='white' text-anchor='middle'>P</text></svg>",
       "sizes": "192x192",
       "type": "image/svg+xml",
       "purpose": "any"
     },
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%233b61ba' width='192' height='192'/><text x='96' y='130.56' font-size='105.60000000000001' font-weight='800' font-family='sans-serif' fill='white' text-anchor='middle'>P</text></svg>",
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%232563eb' width='192' height='192'/><text x='96' y='130.56' font-size='105.60000000000001' font-weight='800' font-family='sans-serif' fill='white' text-anchor='middle'>P</text></svg>",
       "sizes": "192x192",
       "type": "image/svg+xml",
       "purpose": "maskable"
     },
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect fill='%233b61ba' width='512' height='512'/><text x='256' y='348.16' font-size='281.6' font-weight='800' font-family='sans-serif' fill='white' text-anchor='middle'>P</text></svg>",
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect fill='%232563eb' width='512' height='512'/><text x='256' y='348.16' font-size='281.6' font-weight='800' font-family='sans-serif' fill='white' text-anchor='middle'>P</text></svg>",
       "sizes": "512x512",
       "type": "image/svg+xml"
     }
@@ -38,7 +38,7 @@
       "url": "/hoje",
       "icons": [
         {
-          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><rect fill='%233b61ba' width='96' height='96'/><text x='48' y='65.28' font-size='52.800000000000004' font-weight='800' font-family='sans-serif' fill='white' text-anchor='middle'>P</text></svg>",
+          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><rect fill='%232563eb' width='96' height='96'/><text x='48' y='65.28' font-size='52.800000000000004' font-weight='800' font-family='sans-serif' fill='white' text-anchor='middle'>P</text></svg>",
           "sizes": "96x96",
           "type": "image/svg+xml"
         }
@@ -51,7 +51,7 @@
       "url": "/recorrencias",
       "icons": [
         {
-          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><rect fill='%233b61ba' width='96' height='96'/><text x='48' y='65.28' font-size='52.800000000000004' font-weight='800' font-family='sans-serif' fill='white' text-anchor='middle'>P</text></svg>",
+          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><rect fill='%232563eb' width='96' height='96'/><text x='48' y='65.28' font-size='52.800000000000004' font-weight='800' font-family='sans-serif' fill='white' text-anchor='middle'>P</text></svg>",
           "sizes": "96x96",
           "type": "image/svg+xml"
         }
