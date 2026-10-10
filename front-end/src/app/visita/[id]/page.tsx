@@ -1,14 +1,12 @@
 'use client';
 
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
   Clock,
   DoorClosed,
-  Loader2,
   Map as MapaIcone,
   MapPin,
-  Mic,
   Navigation,
   Phone,
   PhoneCall,
@@ -24,11 +22,13 @@ import {
 import { Establishment, Turno, Visit, VisitResult } from '@/lib/types';
 import { establishmentsAPI, followupsAPI, visitsAPI } from '@/lib/api';
 import { FornecimentosCard } from '@/components/fornecimentos-card';
+import { IconeEnvio, IconeVoz } from '@/components/icones-animados';
 import {
   Badge,
   Button,
   ButtonLink,
   Card,
+  Desenha,
   EmptyState,
   ErroAviso,
   ListaSkeleton,
@@ -73,7 +73,10 @@ const STATUS: Record<string, { rotulo: string; tom: Tom }> = {
 };
 
 const CLASSE_CAMPO =
-  'min-h-11 w-full rounded-xl border border-input bg-card px-3 text-base text-foreground placeholder:text-muted-foreground';
+  'min-h-11 w-full rounded-xl border border-input bg-card px-3 text-base text-foreground placeholder:text-muted-foreground transition-colors duration-150 focus:border-primary';
+
+// Atraso da confirmação "Visita registrada" antes de voltar para a lista.
+const ATRASO_CONFIRMACAO_MS = 450;
 
 function Linha({ icone, rotulo, children }: { icone: ReactNode; rotulo: string; children: ReactNode }) {
   return (
@@ -91,9 +94,10 @@ function Linha({ icone, rotulo, children }: { icone: ReactNode; rotulo: string; 
 
 const Pendente = () => <span className="font-normal italic text-muted-foreground">a levantar em campo</span>;
 
-function Secao({ titulo, children }: { titulo: string; children: ReactNode }) {
+/** `atraso` escalona as seções que já estão na tela; as condicionais entram sem atraso. */
+function Secao({ titulo, children, atraso = 0 }: { titulo: string; children: ReactNode; atraso?: number }) {
   return (
-    <Card className="space-y-3 animate-fade-up">
+    <Card className="space-y-3 animate-fade-up" style={{ animationDelay: `${atraso}ms` }}>
       <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">{titulo}</h2>
       {children}
     </Card>
@@ -115,7 +119,13 @@ export default function VisitaPage() {
   const [bloqueado, setBloqueado] = useState(false);
   const [compraAutonoma, setCompraAutonoma] = useState(false);
   const [enviando, setEnviando] = useState(false);
+  const [enviado, setEnviado] = useState(false);
   const [ouvindo, setOuvindo] = useState(false);
+  const temporizador = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => () => {
+    if (temporizador.current) clearTimeout(temporizador.current);
+  }, []);
 
   useEffect(() => {
     async function carregar() {
@@ -195,7 +205,9 @@ export default function VisitaPage() {
       };
 
       await visitsAPI.create(visita);
-      router.push('/hoje');
+      // Confirma no próprio botão antes de voltar: o vendedor vê que o registro entrou.
+      setEnviado(true);
+      temporizador.current = setTimeout(() => router.push('/hoje'), ATRASO_CONFIRMACAO_MS);
     } catch (err) {
       setErroForm(err instanceof Error ? err.message : 'Erro ao registrar a visita.');
       setEnviando(false);
@@ -321,12 +333,12 @@ export default function VisitaPage() {
         </Secao>
 
         {/* Fornecedores */}
-        <Card className="animate-fade-up">
+        <Card className="animate-fade-up" style={{ animationDelay: '50ms' }}>
           <FornecimentosCard establishmentId={establishment.id} />
         </Card>
 
         {/* Resultado */}
-        <Secao titulo="Resultado da visita">
+        <Secao titulo="Resultado da visita" atraso={100}>
           {jaCadastrado && (
             <p className="flex items-center gap-2 rounded-xl bg-success-soft px-3 py-2 text-sm font-semibold text-success-text">
               <UserPlus aria-hidden="true" className="size-4" />
@@ -346,11 +358,18 @@ export default function VisitaPage() {
                     setErroForm(null);
                   }}
                   className={cn(
-                    'flex min-h-16 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 px-2 py-2 text-sm font-semibold transition-colors',
+                    'flex min-h-16 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 px-2 py-2 text-sm font-semibold transition-[background-color,border-color,color,transform] duration-150 ease-out-strong active:scale-95',
                     ativo ? SELECIONADO[tom] : 'border-border bg-card text-foreground hover:bg-muted',
                   )}
                 >
-                  <Icone aria-hidden="true" className="size-5" />
+                  {/* O wrapper externo segura a escala (transição); o interno remonta ao selecionar e redesenha o ícone. */}
+                  <span
+                    className={cn('inline-flex transition-transform duration-200 ease-out-strong', ativo && 'scale-110')}
+                  >
+                    <Desenha key={String(ativo)} ativo={ativo}>
+                      <Icone aria-hidden="true" className="size-5" />
+                    </Desenha>
+                  </span>
                   {rotulo}
                 </button>
               );
@@ -409,7 +428,7 @@ export default function VisitaPage() {
         )}
 
         {/* Turno */}
-        <Secao titulo="Melhor turno para voltar">
+        <Secao titulo="Melhor turno para voltar" atraso={150}>
           <div className="grid grid-cols-3 gap-2" role="group" aria-label="Melhor turno para voltar">
             {TURNOS.map((turno) => {
               const ativo = melhorTurno === turno.valor;
@@ -420,7 +439,7 @@ export default function VisitaPage() {
                   aria-pressed={ativo}
                   onClick={() => setMelhorTurno(ativo ? null : turno.valor)}
                   className={cn(
-                    'min-h-11 cursor-pointer rounded-xl border-2 text-sm font-semibold transition-colors',
+                    'min-h-11 cursor-pointer rounded-xl border-2 text-sm font-semibold transition-[background-color,border-color,color,transform] duration-150 ease-out-strong active:scale-95',
                     ativo
                       ? 'border-primary bg-primary-soft text-primary-text'
                       : 'border-border bg-card text-foreground hover:bg-muted',
@@ -434,7 +453,7 @@ export default function VisitaPage() {
         </Secao>
 
         {/* Nota */}
-        <Secao titulo="Nota rápida">
+        <Secao titulo="Nota rápida" atraso={200}>
           <div>
             <label htmlFor="nota" className="mb-1 block text-sm font-semibold text-foreground">
               O que foi conversado
@@ -449,8 +468,14 @@ export default function VisitaPage() {
             />
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <Button variante="secondary" onClick={iniciarNotaPorVoz} disabled={ouvindo}>
-              <Mic aria-hidden="true" className={cn('size-4', ouvindo && 'text-danger-text')} />
+            {/* Escutando: anel estático + cor + texto. Sem pulso em loop (não carrega informação extra). */}
+            <Button
+              variante="secondary"
+              onClick={iniciarNotaPorVoz}
+              disabled={ouvindo}
+              className={ouvindo ? 'ring-2 ring-danger/60 disabled:opacity-100!' : undefined}
+            >
+              <IconeVoz ativo={ouvindo} className={cn('size-4', ouvindo && 'text-danger-text')} />
               {ouvindo ? 'Ouvindo…' : 'Ditar nota'}
             </Button>
             <Button variante="secondary" onClick={() => setNota('')} disabled={!nota}>
@@ -465,13 +490,27 @@ export default function VisitaPage() {
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card/95 backdrop-blur">
         <div className="mx-auto max-w-2xl space-y-2 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3">
           {erroForm && (
-            <p role="alert" className="rounded-lg bg-danger-soft px-3 py-2 text-sm font-medium text-danger-text">
+            <p
+              key={erroForm}
+              role="alert"
+              className="animate-fade-up rounded-lg bg-danger-soft px-3 py-2 text-sm font-medium text-danger-text"
+            >
               {erroForm}
             </p>
           )}
-          <Button tamanho="lg" cheio onClick={registrar} disabled={enviando}>
-            {enviando && <Loader2 aria-hidden="true" className="size-5 animate-spin" />}
-            {enviando ? 'Registrando…' : 'Registrar visita'}
+          <Button
+            tamanho="lg"
+            cheio
+            onClick={registrar}
+            disabled={enviando}
+            variante={enviado ? 'success' : 'primary'}
+            className={enviado ? 'disabled:opacity-100!' : undefined}
+          >
+            {/* Um só SVG: o arco gira enquanto envia e vira check quando o registro entra. */}
+            {(enviando || enviado) && (
+              <IconeEnvio estado={enviado ? 'feito' : 'carregando'} className="size-5 animate-icon-in" />
+            )}
+            {enviado ? 'Visita registrada' : enviando ? 'Registrando…' : 'Registrar visita'}
           </Button>
         </div>
       </div>

@@ -12,6 +12,7 @@ import {
   ErroAviso,
   ListaSkeleton,
   PageHeader,
+  Preenchimento,
   buttonClasses,
   type Tom,
 } from '@/components/ui';
@@ -113,7 +114,7 @@ export default function HojePage() {
                   : null;
 
               return (
-                <li key={est.id} className="animate-fade-up" style={{ animationDelay: `${Math.min(i, 6) * 40}ms` }}>
+                <li key={est.id} className="animate-fade-up" style={{ animationDelay: `${Math.min(i, 5) * 45}ms` }}>
                   <Card className="space-y-3">
                     <div className="flex items-start gap-3">
                       <span
@@ -150,7 +151,11 @@ export default function HojePage() {
                         aria-valuenow={prioridade}
                         className="h-2 flex-1 overflow-hidden rounded-full bg-muted"
                       >
-                        <div className="h-full rounded-full bg-primary" style={{ width: `${prioridade}%` }} />
+                        <Preenchimento
+                          porcentagem={prioridade}
+                          className="bg-primary"
+                          atraso={Math.min(i, 5) * 45 + 120}
+                        />
                       </div>
                       <span className="text-xs font-bold tabular-nums text-muted-foreground">
                         Prioridade {prioridade}

@@ -1,16 +1,72 @@
+'use client';
+
 import Link from 'next/link';
-import type { ComponentProps, ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type ComponentProps, type CSSProperties, type ReactNode } from 'react';
 import { ChevronLeft } from 'lucide-react';
 
 export function cn(...partes: (string | false | null | undefined)[]) {
   return partes.filter(Boolean).join(' ');
 }
 
+/* ------------------------------------------------------------ Traço (SVG) */
+
+/**
+ * Faz o ícone SVG de dentro "se desenhar" (stroke draw-on). Os ícones do Lucide não trazem
+ * `pathLength`, então normalizamos cada traço para comprimento 1 antes da primeira pintura;
+ * o CSS (`.desenha` em globals.css) anima o `stroke-dashoffset` de 1 até 0.
+ * Reexecute a animação trocando a `key`. Com `ativo={false}` o ícone fica estático.
+ */
+export function Desenha({
+  children,
+  ativo = true,
+  atraso = 0,
+  className,
+}: {
+  children: ReactNode;
+  ativo?: boolean;
+  atraso?: number;
+  className?: string;
+}) {
+  const ref = useRef<HTMLSpanElement>(null);
+
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.querySelectorAll('path, line, polyline, polygon, circle, ellipse, rect').forEach((tracado) =>
+      tracado.setAttribute('pathLength', '1'),
+    );
+    el.setAttribute('data-pronto', '');
+  }, []);
+
+  return (
+    <span
+      ref={ref}
+      className={cn('inline-flex', ativo && 'desenha', className)}
+      style={{ '--atraso': `${atraso}ms` } as CSSProperties}
+    >
+      {children}
+    </span>
+  );
+}
+
 /* ------------------------------------------------------------------ Card */
 
-export function Card({ className, ...props }: ComponentProps<'div'>) {
+export function Card({
+  className,
+  interativo = false,
+  ...props
+}: ComponentProps<'div'> & { interativo?: boolean }) {
   return (
-    <div className={cn('rounded-2xl border border-border bg-card p-4 shadow-sm', className)} {...props} />
+    <div
+      className={cn(
+        'rounded-2xl border border-border bg-card p-4 shadow-sm',
+        // Cartão que é um link: cede ao toque como um botão (transição, então é interrompível).
+        interativo &&
+          'transition-[background-color,transform] duration-150 ease-out-strong hover:bg-muted active:scale-[0.985]',
+        className,
+      )}
+      {...props}
+    />
   );
 }
 
@@ -66,7 +122,7 @@ const VARIANTES: Record<Variante, string> = {
   ghost: 'text-primary-text hover:bg-primary-soft active:bg-primary-soft',
 };
 
-// Alvos de toque de no mínimo 44px; feedback por cor/brilho, sem mexer no layout.
+// Alvos de toque de no mínimo 44px; feedback por cor/brilho e por escala, sem mexer no layout.
 const TAMANHOS: Record<Tamanho, string> = {
   md: 'min-h-11 px-4 text-sm',
   lg: 'min-h-12 px-5 text-base',
@@ -85,7 +141,9 @@ export function buttonClasses({
 } = {}) {
   return cn(
     'inline-flex cursor-pointer select-none items-center justify-center gap-2 rounded-xl font-semibold',
-    'transition-[background-color,filter,opacity] duration-150',
+    'transition-[background-color,filter,opacity,transform,box-shadow] duration-150 ease-out-strong',
+    // Escala ao toque (Emil): resposta imediata. Desativado ou aria-disabled não cede.
+    'active:scale-[0.97] disabled:active:scale-100 aria-disabled:active:scale-100',
     'disabled:cursor-not-allowed disabled:opacity-50',
     VARIANTES[variante],
     TAMANHOS[tamanho],
@@ -136,7 +194,7 @@ export function PageHeader({
           <Link
             href={voltar.href}
             aria-label={voltar.rotulo}
-            className="-ml-2 flex size-11 shrink-0 items-center justify-center rounded-full text-foreground transition-colors hover:bg-muted"
+            className="-ml-2 flex size-11 shrink-0 items-center justify-center rounded-full text-foreground transition-[background-color,transform] duration-150 ease-out-strong hover:bg-muted active:scale-90"
           >
             <ChevronLeft aria-hidden="true" className="size-6" />
           </Link>
@@ -152,6 +210,40 @@ export function PageHeader({
 }
 
 /* ------------------------------------------------------------- Estatística */
+
+// Contadores que já subiram nesta sessão. A tela de início é visitada várias vezes ao dia:
+// o número sobe só na primeira vez; depois aparece direto (Emil: frequente = sem animação).
+const jaAnimados = new Set<string>();
+
+const reduzMovimento = () =>
+  typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/** Número que sobe até o valor final na primeira exibição da sessão. */
+export function Numero({ valor, chave, duracao = 600 }: { valor: number; chave: string; duracao?: number }) {
+  const [animar] = useState(() => !jaAnimados.has(chave) && !reduzMovimento());
+  const [progresso, setProgresso] = useState(0);
+
+  useEffect(() => {
+    if (!animar) return;
+    let quadro = 0;
+    const inicio = performance.now();
+    const passo = (agora: number) => {
+      const t = Math.min((agora - inicio) / duracao, 1);
+      setProgresso(1 - Math.pow(1 - t, 4)); // ease-out quártico
+      if (t < 1) quadro = requestAnimationFrame(passo);
+      else jaAnimados.add(chave);
+    };
+    quadro = requestAnimationFrame(passo);
+    return () => cancelAnimationFrame(quadro);
+  }, [animar, chave, duracao]);
+
+  const atual = animar && progresso < 1 ? valor * progresso : valor;
+  return (
+    <>
+      {atual.toLocaleString('pt-BR', { maximumFractionDigits: Number.isInteger(valor) ? 0 : 2 })}
+    </>
+  );
+}
 
 export function StatTile({
   valor,
@@ -171,7 +263,9 @@ export function StatTile({
   };
   return (
     <Card className="px-2 py-3 text-center">
-      <p className={cn('text-2xl font-extrabold tabular-nums', cor[tom])}>{valor}</p>
+      <p className={cn('text-2xl font-extrabold tabular-nums', cor[tom])}>
+        {typeof valor === 'number' ? <Numero valor={valor} chave={`stat:${rotulo}`} /> : valor}
+      </p>
       <p className="mt-0.5 text-xs font-medium text-muted-foreground">{rotulo}</p>
     </Card>
   );
@@ -191,9 +285,12 @@ export function EmptyState({
   acao?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center px-6 py-16 text-center">
-      <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-muted text-muted-foreground">
-        {icone}
+    <div className="flex animate-fade-up flex-col items-center px-6 py-16 text-center">
+      <div
+        className="mb-4 flex size-16 animate-pop items-center justify-center rounded-full bg-muted text-muted-foreground"
+        style={{ animationDelay: '80ms' }}
+      >
+        <Desenha atraso={180}>{icone}</Desenha>
       </div>
       <h2 className="text-lg font-bold text-foreground">{titulo}</h2>
       {descricao && <p className="mt-1 max-w-xs text-sm text-muted-foreground">{descricao}</p>}
@@ -219,8 +316,31 @@ export function ListaSkeleton({ itens = 3, altura = 'h-44' }: { itens?: number; 
 
 export function ErroAviso({ mensagem }: { mensagem: string }) {
   return (
-    <div role="alert" className="m-4 rounded-xl border border-danger/30 bg-danger-soft px-4 py-3 text-sm font-medium text-danger-text">
+    <div
+      role="alert"
+      className="m-4 animate-fade-up rounded-xl border border-danger/30 bg-danger-soft px-4 py-3 text-sm font-medium text-danger-text"
+    >
       {mensagem}
     </div>
+  );
+}
+
+/* ------------------------------------------------------------------- Barra */
+
+/** Preenchimento de barra: enche da esquerda por transform, sem animar a largura. */
+export function Preenchimento({
+  porcentagem,
+  className,
+  atraso = 0,
+}: {
+  porcentagem: number;
+  className?: string;
+  atraso?: number;
+}) {
+  return (
+    <div
+      className={cn('h-full origin-left animate-fill rounded-full', className)}
+      style={{ width: `${porcentagem}%`, animationDelay: `${atraso}ms` }}
+    />
   );
 }

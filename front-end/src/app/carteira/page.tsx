@@ -9,10 +9,12 @@ import {
   Badge,
   ButtonLink,
   Card,
+  Desenha,
   EmptyState,
   ErroAviso,
   ListaSkeleton,
   PageHeader,
+  Preenchimento,
   StatTile,
   buttonClasses,
   cn,
@@ -27,7 +29,11 @@ const dataCurta = (iso: string) =>
 function SeloSituacao({ item }: { item: Item }) {
   if (item.metaBatida) {
     return (
-      <Badge tom="success" icone={<Trophy aria-hidden="true" className="size-3.5" />}>
+      <Badge tom="success" icone={
+          <Desenha atraso={200}>
+            <Trophy aria-hidden="true" className="size-3.5" />
+          </Desenha>
+        }>
         Meta batida
       </Badge>
     );
@@ -54,11 +60,13 @@ function SeloSituacao({ item }: { item: Item }) {
 }
 
 /** Três etapas: uma por compra autônoma necessária. */
-function Etapas({ feitas, tom }: { feitas: number; tom: string }) {
+function Etapas({ feitas, tom, atraso = 0 }: { feitas: number; tom: string; atraso?: number }) {
   return (
     <div className="flex gap-1.5" aria-hidden="true">
       {[0, 1, 2].map((i) => (
-        <span key={i} className={cn('h-2 flex-1 rounded-full', i < feitas ? tom : 'bg-muted')} />
+        <span key={i} className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
+          {i < feitas && <Preenchimento porcentagem={100} className={tom} atraso={atraso + i * 90} />}
+        </span>
       ))}
     </div>
   );
@@ -134,7 +142,7 @@ export default function CarteiraPage() {
                     : 'bg-primary';
 
               return (
-                <li key={item.establishmentId} className="animate-fade-up" style={{ animationDelay: `${Math.min(i, 6) * 40}ms` }}>
+                <li key={item.establishmentId} className="animate-fade-up" style={{ animationDelay: `${Math.min(i, 5) * 45}ms` }}>
                   <Card className={cn('space-y-3', item.metaBatida && 'border-success/40 bg-success-soft/40')}>
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
@@ -163,7 +171,7 @@ export default function CarteiraPage() {
                               : `${item.diasRestantes} ${item.diasRestantes === 1 ? 'dia restante' : 'dias restantes'}`}
                         </span>
                       </div>
-                      <Etapas feitas={item.comprasAte} tom={tomEtapas} />
+                      <Etapas feitas={item.comprasAte} tom={tomEtapas} atraso={Math.min(i, 5) * 45 + 150} />
                     </div>
 
                     <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">

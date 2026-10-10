@@ -105,15 +105,76 @@
 
   --font-sans: var(--font-plus-jakarta), ui-sans-serif, system-ui, sans-serif;
 
-  --animate-fade-up: fade-up 0.28s ease-out both;
+  /*
+   * Movimento (skill design-motion-principles: Jakub primário, Emil secundário).
+   * Curva forte de saída para tudo que entra; nada usa `ease` puro.
+   * `backwards` segura o primeiro quadro durante o atraso e não retém transform/filter
+   * depois do fim (reter criaria um bloco de contenção para elementos `fixed`).
+   */
+  --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
+
+  --animate-fade-up: fade-up 0.34s var(--ease-out-strong) backwards;
+  --animate-fade-in: fade-in 0.14s var(--ease-out-strong) backwards;
+  --animate-pop: pop 0.42s var(--ease-out-strong) backwards;
+  --animate-icon-in: icon-in 0.2s var(--ease-out-strong) backwards;
+  --animate-fill: fill 0.55s var(--ease-out-strong) backwards;
+
+  /* Receita de entrada: opacidade + translateY + blur (o elemento "entra em foco"). */
   @keyframes fade-up {
     from {
       opacity: 0;
       transform: translateY(8px);
+      filter: blur(4px);
     }
     to {
       opacity: 1;
       transform: translateY(0);
+      filter: blur(0);
+    }
+  }
+  /* Troca de tela: só opacidade, para não criar bloco de contenção para a barra fixa. */
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  /* Selo ou ícone que ganha destaque: parte de 0,9 (nunca de 0) e passa um pouco do alvo. */
+  @keyframes pop {
+    from {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    60% {
+      opacity: 1;
+      transform: scale(1.06);
+    }
+    to {
+      transform: scale(1);
+    }
+  }
+  /* Troca contextual de ícone (carregando → feito): opacidade + escala + blur. */
+  @keyframes icon-in {
+    from {
+      opacity: 0;
+      transform: scale(0.8);
+      filter: blur(4px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+      filter: blur(0);
+    }
+  }
+  /* Barras enchem da esquerda para a direita por transform (não por width). */
+  @keyframes fill {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
     }
   }
 }
@@ -137,7 +198,103 @@ body {
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ------------------------------------------------------------------ SVG
+ * Skill web-animation-skills (svg-animation + accessible-animation + 60fps).
+ * Só `stroke-dashoffset`, `transform` e `opacity` mudam por quadro: nada de layout.
+ * Curva forte de saída igual à do resto do app.
+ */
+
+/* Desenho de traço. O JS (componente Desenha) normaliza cada traço para pathLength=1.
+ * `1 2` no dasharray (traço 1, vazio 2) evita o pontinho que a capa redonda deixa com `1 1`. */
+@keyframes desenha {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.desenha[data-pronto] :is(path, line, polyline, polygon, circle, ellipse, rect) {
+  stroke-dasharray: 1 2;
+  animation: desenha 0.45s cubic-bezier(0.23, 1, 0.32, 1) var(--atraso, 0ms) backwards;
+}
+
+/* Botão de envio: um único SVG vai de "carregando" a "feito" sem trocar de elemento.
+ * O arco gira; ao concluir ele fecha o círculo e o check se desenha. Transições CSS (interrompíveis). */
+@keyframes gira {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.icone-envio {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.icone-envio__anel {
+  stroke-dasharray: 0.28 0.72;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: gira 0.8s linear infinite;
+  transition: stroke-dasharray 0.35s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.icone-envio__check {
+  stroke-dasharray: 1 2;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 0.3s cubic-bezier(0.23, 1, 0.32, 1) 0.2s;
+}
+.icone-envio[data-estado='feito'] .icone-envio__anel {
+  stroke-dasharray: 1 0;
+}
+.icone-envio[data-estado='feito'] .icone-envio__check {
+  stroke-dashoffset: 0;
+}
+
+/* Microfone escutando: três barras de onda, só enquanto escuta (estado, não decoração).
+ * Curva senoidal em vez de `ease-in-out` puro. */
+@keyframes onda {
+  0%,
+  100% {
+    transform: scaleY(0.35);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+.icone-voz line {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: onda 0.9s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+}
+.icone-voz line:nth-child(2) {
+  animation-delay: -0.3s;
+}
+.icone-voz line:nth-child(3) {
+  animation-delay: -0.6s;
+}
+
+/* Traço do ícone da aba ativa engrossa com transição (CSS, sem trocar o ícone). */
+.icone-aba {
+  transition:
+    stroke-width 0.2s cubic-bezier(0.23, 1, 0.32, 1),
+    scale 0.2s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* Reduced motion em camadas (accessible-animation): o `*` acima é a rede de segurança.
+ * Tier 3 (indicador de carregamento) continua girando devagar; as ondas do microfone ficam
+ * estáticas, pois o texto "Ouvindo…" e a cor já carregam o estado. */
+@media (prefers-reduced-motion: reduce) {
+  .icone-envio[data-estado='carregando'] .icone-envio__anel {
+    animation-duration: 1.6s !important;
+    animation-iteration-count: infinite !important;
   }
 }

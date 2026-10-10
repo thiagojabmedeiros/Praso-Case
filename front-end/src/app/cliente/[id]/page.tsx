@@ -135,12 +135,12 @@ export default function ClientePage() {
           </dl>
         </Card>
 
-        <Card className="animate-fade-up">
+        <Card className="animate-fade-up" style={{ animationDelay: '50ms' }}>
           <FornecimentosCard establishmentId={establishment.id} />
         </Card>
 
         {/* Compras */}
-        <Card className="animate-fade-up space-y-3">
+        <Card className="animate-fade-up space-y-3" style={{ animationDelay: '100ms' }}>
           <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
             Compras ({purchases.length})
           </h2>
@@ -164,12 +164,16 @@ export default function ClientePage() {
         </Card>
 
         {/* Visitas */}
-        <Card className="animate-fade-up space-y-3">
+        <Card className="animate-fade-up space-y-3" style={{ animationDelay: '150ms' }}>
           <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
             Histórico de visitas ({visits.length})
           </h2>
           {erroAcao && (
-            <p role="alert" className="rounded-lg bg-danger-soft px-3 py-2 text-sm font-medium text-danger-text">
+            <p
+              key={erroAcao}
+              role="alert"
+              className="animate-fade-up rounded-lg bg-danger-soft px-3 py-2 text-sm font-medium text-danger-text"
+            >
               {erroAcao}
             </p>
           )}
@@ -187,7 +191,10 @@ export default function ClientePage() {
                 return (
                   <li
                     key={visita.id}
-                    className={cn('rounded-xl border border-border p-3', anulada ? 'bg-muted opacity-70' : 'bg-card')}
+                    className={cn(
+                      'rounded-xl border border-border p-3 transition-[background-color,opacity] duration-300 ease-out-strong',
+                      anulada ? 'bg-muted opacity-70' : 'bg-card',
+                    )}
                   >
                     <div className="flex items-center justify-between gap-2">
                       <Badge
