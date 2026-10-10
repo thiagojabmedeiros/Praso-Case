@@ -7,13 +7,15 @@ import { Establishment, Turno, Visit, VisitResult } from '@/lib/types';
 import { establishmentsAPI, followupsAPI, visitsAPI } from '@/lib/api';
 import { FornecimentosCard } from '@/components/fornecimentos-card';
 
+// Ordem estratégica: resultados que geram valor primeiro; os que ainda podem virar
+// venda com nova tentativa no meio; a recusa por último.
 const visitResults: { value: VisitResult; label: string; emoji: string }[] = [
-  { value: 'cadastrou', label: 'Cadastrou', emoji: '✅' },
-  { value: 'recusou', label: 'Recusou', emoji: '❌' },
-  { value: 'fechado', label: 'Fechado', emoji: '🚪' },
-  { value: 'ausente', label: 'Ausente', emoji: '😴' },
   { value: 'compra', label: 'Compra', emoji: '🛒' },
+  { value: 'cadastrou', label: 'Cadastrou', emoji: '✅' },
   { value: 'em-acompanhamento', label: 'Acompanhamento', emoji: '📞' },
+  { value: 'ausente', label: 'Ausente', emoji: '😴' },
+  { value: 'fechado', label: 'Fechado', emoji: '🚪' },
+  { value: 'recusou', label: 'Recusou', emoji: '❌' },
 ];
 
 export default function VisitaPage() {
