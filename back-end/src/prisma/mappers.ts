@@ -59,6 +59,9 @@ export function toVisit(row: VisitRow): Visit {
       : undefined,
     nota: row.nota,
     proximoContato: row.proximoContato,
+    pontosGerados: row.pontosGerados,
+    anuladaEm: row.anuladaEm,
+    motivoAnulacao: row.motivoAnulacao,
     createdAt: row.createdAt,
   };
 }

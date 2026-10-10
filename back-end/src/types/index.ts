@@ -43,6 +43,9 @@ export interface Visit {
   geo?: Geo;
   nota: string;
   proximoContato?: Date | null;
+  pontosGerados?: number;
+  anuladaEm?: Date | null;
+  motivoAnulacao?: string | null;
   createdAt: Date;
 }
 

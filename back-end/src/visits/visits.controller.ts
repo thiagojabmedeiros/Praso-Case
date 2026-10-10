@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Body, Query } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Param, Body } from '@nestjs/common';
 import { VisitsService } from './visits.service';
 import type { Visit } from '../types';
 
@@ -19,5 +19,10 @@ export class VisitsController {
   @Post()
   create(@Body() data: Omit<Visit, 'id' | 'createdAt'>) {
     return this.service.create(data);
+  }
+
+  @Patch(':id/anular')
+  anular(@Param('id') id: string, @Body('motivo') motivo: string) {
+    return this.service.anular(id, motivo);
   }
 }
