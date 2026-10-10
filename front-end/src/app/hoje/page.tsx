@@ -54,6 +54,51 @@ function tomDoMotivo(motivo: string): Tom {
   return 'neutral';
 }
 
+type Opcao = { valor: string; rotulo: string };
+
+/** Linha de chips rolável. "Todos" fica sempre no começo e limpa o filtro. */
+function FiltroChips({
+  titulo,
+  opcoes,
+  valor,
+  onChange,
+}: {
+  titulo: string;
+  opcoes: Opcao[];
+  valor: string | null;
+  onChange: (valor: string | null) => void;
+}) {
+  const chips: { valor: string | null; rotulo: string }[] = [{ valor: null, rotulo: 'Todos' }, ...opcoes];
+  return (
+    <div className="space-y-1.5">
+      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{titulo}</p>
+      <div role="group" aria-label={titulo} className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
+        {chips.map((chip) => {
+          const ativo = valor === chip.valor;
+          return (
+            <button
+              key={chip.valor ?? 'todos'}
+              type="button"
+              aria-pressed={ativo}
+              onClick={() => onChange(chip.valor)}
+              className={cn(
+                'min-h-9 shrink-0 cursor-pointer rounded-full border px-3 text-sm font-semibold transition-[background-color,color,transform] duration-150 ease-out-strong active:scale-95',
+                ativo
+                  ? 'border-primary bg-primary-soft text-primary-text'
+                  : 'border-border bg-card text-foreground hover:bg-muted',
+              )}
+            >
+              {chip.rotulo}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+const capitalizar = (texto: string) => texto.charAt(0).toUpperCase() + texto.slice(1);
+
 export default function HojePage() {
   const [recomendacoes, setRecomendacoes] = useState<Recomendacao[]>([]);
   // Resultado das visitas válidas de hoje, por estabelecimento (para mostrar a ação feita).
@@ -63,6 +108,9 @@ export default function HojePage() {
   const [semLocalizacao, setSemLocalizacao] = useState(false);
   const [dataHoje, setDataHoje] = useState('');
   const [aba, setAba] = useState<Aba>('pendentes');
+  // Filtro de bairro (ambas as abas) e o segundo filtro: segmento em Pendentes, resultado em Visitados.
+  const [filtroBairro, setFiltroBairro] = useState<string | null>(null);
+  const [filtroExtra, setFiltroExtra] = useState<string | null>(null);
 
   useEffect(() => {
     // A data é calculada no navegador para não divergir da página pré-renderizada.
@@ -114,6 +162,36 @@ export default function HojePage() {
   const visitados = recomendacoes.filter((r) => r.visitadoHoje);
   const lista = aba === 'pendentes' ? pendentes : visitados;
 
+  const bairros = [...new Set(lista.map((r) => r.establishment.bairro))].sort();
+  const segmentos = [...new Set(lista.map((r) => r.establishment.segmento))].sort();
+  const resultadosPresentes = new Set(lista.flatMap((r) => acoesHoje[r.establishment.id] ?? []));
+  const opcoesExtra: Opcao[] =
+    aba === 'pendentes'
+      ? segmentos.map((s) => ({ valor: s, rotulo: capitalizar(s) }))
+      : (Object.keys(RESULTADO) as VisitResult[])
+          .filter((r) => resultadosPresentes.has(r))
+          .map((r) => ({ valor: r, rotulo: RESULTADO[r].rotulo }));
+  const filtrosAtivos = filtroBairro !== null || filtroExtra !== null;
+
+  const listaFiltrada = lista.filter((r) => {
+    if (filtroBairro && r.establishment.bairro !== filtroBairro) return false;
+    if (filtroExtra && aba === 'pendentes' && r.establishment.segmento !== filtroExtra) return false;
+    if (filtroExtra && aba === 'visitados' && !(acoesHoje[r.establishment.id] ?? []).includes(filtroExtra as VisitResult)) {
+      return false;
+    }
+    return true;
+  });
+
+  const limparFiltros = () => {
+    setFiltroBairro(null);
+    setFiltroExtra(null);
+  };
+
+  const trocarAba = (nova: Aba) => {
+    limparFiltros();
+    setAba(nova);
+  };
+
   return (
     <>
       <PageHeader titulo="Hoje" subtitulo={dataHoje || 'Carteira do dia'} />
@@ -145,7 +223,7 @@ export default function HojePage() {
                   type="button"
                   role="tab"
                   aria-selected={ativa}
-                  onClick={() => setAba(valor)}
+                  onClick={() => trocarAba(valor)}
                   className={cn(
                     'flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-lg text-sm font-semibold transition-[background-color,color,box-shadow,transform] duration-150 ease-out-strong active:scale-95',
                     ativa ? 'bg-card text-primary-text shadow-sm' : 'text-muted-foreground hover:text-foreground',
@@ -164,6 +242,41 @@ export default function HojePage() {
               <FileText aria-hidden="true" className="size-4" />
               Ver resumo do dia
             </ButtonLink>
+          )}
+
+          {lista.length > 0 && (
+            <div className="space-y-3">
+              {bairros.length > 1 && (
+                <FiltroChips
+                  titulo="Bairro"
+                  opcoes={bairros.map((b) => ({ valor: b, rotulo: b }))}
+                  valor={filtroBairro}
+                  onChange={setFiltroBairro}
+                />
+              )}
+              {opcoesExtra.length > 1 && (
+                <FiltroChips
+                  titulo={aba === 'pendentes' ? 'Segmento' : 'Resultado'}
+                  opcoes={opcoesExtra}
+                  valor={filtroExtra}
+                  onChange={setFiltroExtra}
+                />
+              )}
+              {filtrosAtivos && (
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">
+                    Mostrando {listaFiltrada.length} de {lista.length}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={limparFiltros}
+                    className="cursor-pointer font-semibold text-primary-text underline-offset-2 hover:underline"
+                  >
+                    Limpar filtros
+                  </button>
+                </div>
+              )}
+            </div>
           )}
 
           {semLocalizacao && (
@@ -191,8 +304,21 @@ export default function HojePage() {
             />
           )}
 
+          {lista.length > 0 && listaFiltrada.length === 0 && (
+            <div className="rounded-xl bg-muted px-4 py-6 text-center">
+              <p className="text-sm font-semibold text-foreground">Nenhum estabelecimento com esses filtros.</p>
+              <button
+                type="button"
+                onClick={limparFiltros}
+                className="mt-2 cursor-pointer text-sm font-semibold text-primary-text underline-offset-2 hover:underline"
+              >
+                Limpar filtros
+              </button>
+            </div>
+          )}
+
           <ol className="space-y-3">
-            {lista.map(({ establishment: est, score, motivos, visitadoHoje }, i) => {
+            {listaFiltrada.map(({ establishment: est, score, motivos, visitadoHoje }, i) => {
               const status = STATUS[est.status] ?? STATUS.churn;
               const prioridade = Math.round(score * 100);
               const acoes = acoesHoje[est.id] ?? [];
