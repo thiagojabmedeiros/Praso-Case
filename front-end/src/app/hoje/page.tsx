@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { CalendarX2, Clock, MapPin, MapPinOff, Phone } from 'lucide-react';
+import { CalendarCheck2, CalendarX2, Clock, MapPin, MapPinOff, Phone } from 'lucide-react';
 import { BotaoGoogleMaps, BotaoWaze } from '@/components/botoes-navegacao';
 import { Recomendacao } from '@/lib/types';
 import { recommendationsAPI } from '@/lib/api';
@@ -15,6 +15,7 @@ import {
   PageHeader,
   Preenchimento,
   buttonClasses,
+  cn,
   type Tom,
 } from '@/components/ui';
 
@@ -29,6 +30,8 @@ const STATUS: Record<string, { rotulo: string; tom: Tom }> = {
 };
 
 const TURNOS: Record<string, string> = { manha: 'manhã', tarde: 'tarde', noite: 'noite' };
+
+type Aba = 'pendentes' | 'visitados';
 
 /** Cor do motivo conforme o que ele significa para o vendedor. */
 function tomDoMotivo(motivo: string): Tom {
@@ -46,6 +49,7 @@ export default function HojePage() {
   const [erro, setErro] = useState<string | null>(null);
   const [semLocalizacao, setSemLocalizacao] = useState(false);
   const [dataHoje, setDataHoje] = useState('');
+  const [aba, setAba] = useState<Aba>('pendentes');
 
   useEffect(() => {
     // A data é calculada no navegador para não divergir da página pré-renderizada.
@@ -79,6 +83,11 @@ export default function HojePage() {
     carregar();
   }, []);
 
+  // Pendentes são os que ainda não receberam visita hoje; visitados saem da lista principal.
+  const pendentes = recomendacoes.filter((r) => !r.visitadoHoje);
+  const visitados = recomendacoes.filter((r) => r.visitadoHoje);
+  const lista = aba === 'pendentes' ? pendentes : visitados;
+
   return (
     <>
       <PageHeader titulo="Hoje" subtitulo={dataHoje || 'Carteira do dia'} />
@@ -96,6 +105,34 @@ export default function HojePage() {
 
       {!carregando && recomendacoes.length > 0 && (
         <div className="space-y-3 p-4">
+          <div role="tablist" aria-label="Estabelecimentos de hoje" className="grid grid-cols-2 gap-1 rounded-xl bg-muted p-1">
+            {(
+              [
+                { valor: 'pendentes', rotulo: 'Pendentes', total: pendentes.length, Icone: CalendarX2 },
+                { valor: 'visitados', rotulo: 'Visitados', total: visitados.length, Icone: CalendarCheck2 },
+              ] as const
+            ).map(({ valor, rotulo, total, Icone }) => {
+              const ativa = aba === valor;
+              return (
+                <button
+                  key={valor}
+                  type="button"
+                  role="tab"
+                  aria-selected={ativa}
+                  onClick={() => setAba(valor)}
+                  className={cn(
+                    'flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-lg text-sm font-semibold transition-[background-color,color,box-shadow,transform] duration-150 ease-out-strong active:scale-95',
+                    ativa ? 'bg-card text-primary-text shadow-sm' : 'text-muted-foreground hover:text-foreground',
+                  )}
+                >
+                  <Icone aria-hidden="true" className="size-4" />
+                  {rotulo}
+                  <span className="rounded-full bg-background px-1.5 text-xs tabular-nums">{total}</span>
+                </button>
+              );
+            })}
+          </div>
+
           {semLocalizacao && (
             <p className="flex items-center gap-2 rounded-xl bg-muted px-3 py-2 text-sm text-muted-foreground">
               <MapPinOff aria-hidden="true" className="size-4 shrink-0" />
@@ -103,8 +140,26 @@ export default function HojePage() {
             </p>
           )}
 
+          {lista.length === 0 && (
+            <EmptyState
+              icone={
+                aba === 'pendentes' ? (
+                  <CalendarCheck2 aria-hidden="true" className="size-8" />
+                ) : (
+                  <CalendarX2 aria-hidden="true" className="size-8" />
+                )
+              }
+              titulo={aba === 'pendentes' ? 'Tudo visitado por hoje' : 'Nenhuma visita registrada hoje'}
+              descricao={
+                aba === 'pendentes'
+                  ? 'Todos os estabelecimentos da lista já receberam visita. Eles estão na aba Visitados.'
+                  : 'Quando você registrar uma visita, o estabelecimento aparece aqui.'
+              }
+            />
+          )}
+
           <ol className="space-y-3">
-            {recomendacoes.map(({ establishment: est, score, motivos }, i) => {
+            {lista.map(({ establishment: est, score, motivos }, i) => {
               const status = STATUS[est.status] ?? STATUS.churn;
               const prioridade = Math.round(score * 100);
               const horario = est.melhorHorario

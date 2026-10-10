@@ -11,6 +11,8 @@ export interface Recomendacao {
   establishment: Establishment;
   score: number;
   motivos: string[];
+  /** Já teve visita válida (qualquer resultado) no dia de hoje, no fuso de Recife. */
+  visitadoHoje: boolean;
 }
 
 @Injectable()
@@ -45,8 +47,11 @@ export class RecommendationsService {
     const ultimaVisita = new Map<string, Date>();
     // Retorno combinado: data do próximo contato mais recente registrada numa visita válida.
     const retornoPorEst = new Map<string, string>();
+    const diaDeHoje = dataRecife(agora);
+    const visitadosHoje = new Set<string>();
     for (const v of visitas) {
       if (!ultimaVisita.has(v.establishmentId)) ultimaVisita.set(v.establishmentId, v.dataHora);
+      if (dataRecife(v.dataHora) === diaDeHoje) visitadosHoje.add(v.establishmentId);
       if (v.proximoContato && !retornoPorEst.has(v.establishmentId)) {
         retornoPorEst.set(v.establishmentId, dataRecife(v.proximoContato));
       }
@@ -81,7 +86,7 @@ export class RecommendationsService {
           },
           agora,
         );
-        return { establishment, score, motivos };
+        return { establishment, score, motivos, visitadoHoje: visitadosHoje.has(row.id) };
       })
       .filter((r): r is Recomendacao => r !== null)
       .sort((a, b) => b.score - a.score);

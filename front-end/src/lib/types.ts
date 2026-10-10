@@ -86,6 +86,8 @@ export interface Recomendacao {
   establishment: Establishment;
   score: number;
   motivos: string[];
+  /** Já teve visita registrada hoje (qualquer resultado): sai da aba Pendentes. */
+  visitadoHoje: boolean;
 }
 
 export interface Fornecimento {
