@@ -112,7 +112,7 @@ export default function CarteiraPage() {
           </div>
         ) : (
           followups.map((followup) => (
-            <Link key={followup.establishmentId} href={`/cliente/${followup.establishmentId}`}>
+            <div key={followup.establishmentId}>
               <div
                 className={`rounded-lg shadow hover:shadow-md transition p-4 cursor-pointer ${
                   followup.metaBatida ? 'bg-emerald-50 border border-emerald-200 opacity-80' : 'bg-white'
@@ -120,9 +120,11 @@ export default function CarteiraPage() {
               >
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div className="flex-1 min-w-0">
-                    <h2 className="font-semibold text-lg text-slate-900 truncate">
-                      {followup.establishment?.nomeFantasia || followup.establishmentId}
-                    </h2>
+                    <Link href={`/cliente/${followup.establishmentId}`}>
+                      <h2 className="font-semibold text-lg text-slate-900 truncate hover:underline">
+                        {followup.establishment?.nomeFantasia || followup.establishmentId}
+                      </h2>
+                    </Link>
                     <p className="text-sm text-slate-600">
                       {followup.establishment?.razaoSocial}
                     </p>
@@ -179,9 +181,17 @@ export default function CarteiraPage() {
                   >
                     📞 Contato
                   </button>
+                  {!followup.metaBatida && (
+                    <Link
+                      href={`/visita/${followup.establishmentId}`}
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 rounded transition text-center"
+                    >
+                      🛒 Visitar
+                    </Link>
+                  )}
                 </div>
               </div>
-            </Link>
+            </div>
           ))
         )}
       </div>
