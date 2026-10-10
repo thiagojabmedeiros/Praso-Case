@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Establishment, Turno, Visit, VisitResult } from '@/lib/types';
 import { establishmentsAPI, followupsAPI, visitsAPI } from '@/lib/api';
+import { FornecimentosCard } from '@/components/fornecimentos-card';
 
 const visitResults: { value: VisitResult; label: string; emoji: string }[] = [
   { value: 'cadastrou', label: 'Cadastrou', emoji: '✅' },
@@ -195,12 +196,6 @@ export default function VisitaPage() {
               <span className="font-medium">{establishment.endereco}</span>
             </p>
             <p>
-              <span className="text-slate-600">Fornecedor atual:</span>{' '}
-              <span className={establishment.fornecedorAtual ? 'font-medium' : 'font-medium text-slate-500'}>
-                {establishment.fornecedorAtual ?? 'a levantar em campo'}
-              </span>
-            </p>
-            <p>
               <span className="text-slate-600">Melhor horário:</span>{' '}
               <span className={establishment.melhorHorario ? 'font-medium' : 'font-medium text-slate-500'}>
                 {establishment.melhorHorario ?? 'a levantar em campo'}
@@ -219,6 +214,7 @@ export default function VisitaPage() {
               </p>
             )}
           </div>
+          <FornecimentosCard establishmentId={establishment.id} />
           <div className="mt-3 flex gap-2">
             <a
               href={

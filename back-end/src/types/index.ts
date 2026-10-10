@@ -25,7 +25,6 @@ export interface Establishment {
   endereco: string;
   telefone: string | null;
   bairro: string;
-  fornecedorAtual: string | null;
   melhorHorario: string | null; // ex: "14:00"
   melhorTurno: Turno | null; // último turno informado pelo vendedor
   notasContexto: string;

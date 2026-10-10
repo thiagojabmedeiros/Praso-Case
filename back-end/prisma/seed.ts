@@ -24,7 +24,6 @@ const establishments = [
     latitude: -8.199201723330138,
     longitude: -34.91828659814855,
     geocodePrecisao: 'manual',
-    fornecedorAtual: 'Distribuidora Teste B',
     melhorHorario: null,
     potencial: 'normal' as const,
     razaoSocial: 'Firetha Burger & Smoked Ltda',
@@ -43,7 +42,6 @@ const establishments = [
     latitude: -8.1956635,
     longitude: -34.9193481,
     geocodePrecisao: 'poi',
-    fornecedorAtual: null,
     melhorHorario: '19:00',
     potencial: 'alto' as const,
     razaoSocial: null,
@@ -61,7 +59,6 @@ const establishments = [
     latitude: -8.196265315128022,
     longitude: -34.918733871164086,
     geocodePrecisao: 'manual',
-    fornecedorAtual: 'Distribuidora Teste C',
     melhorHorario: null,
     potencial: 'normal' as const,
     razaoSocial: null,
@@ -80,7 +77,6 @@ const establishments = [
     latitude: -8.198344350541936,
     longitude: -34.91830598650777,
     geocodePrecisao: 'manual',
-    fornecedorAtual: null,
     melhorHorario: '11:30',
     potencial: 'alto' as const,
     razaoSocial: null,
@@ -99,7 +95,6 @@ const establishments = [
     latitude: -8.2081606,
     longitude: -34.9270905,
     geocodePrecisao: 'poi',
-    fornecedorAtual: 'Distribuidora Teste A',
     melhorHorario: '18:30',
     potencial: 'normal' as const,
     razaoSocial: null,
@@ -117,7 +112,6 @@ const establishments = [
     latitude: -8.211732566912971,
     longitude: -34.918920899999996,
     geocodePrecisao: 'manual',
-    fornecedorAtual: null,
     melhorHorario: null,
     potencial: 'alto' as const,
     razaoSocial: 'S Arruda Bar e Restaurante Sociedade Unipessoal Limitada',
@@ -135,7 +129,6 @@ const establishments = [
     latitude: -8.1609071,
     longitude: -34.9135021,
     geocodePrecisao: 'poi',
-    fornecedorAtual: null,
     melhorHorario: '14:30',
     potencial: 'baixo' as const,
     razaoSocial: null,
@@ -153,7 +146,6 @@ const establishments = [
     latitude: -8.159983733129112,
     longitude: -34.91404328650776,
     geocodePrecisao: 'manual',
-    fornecedorAtual: 'Distribuidora Teste C',
     melhorHorario: null,
     potencial: 'baixo' as const,
     razaoSocial: 'R C Catel Ltda',
@@ -179,7 +171,6 @@ const establishments = [
     endereco: 'Av. 17 de Agosto, 248 - Casa Forte, Recife - PE, 52060-590',
     telefone: '(81) 3441-9945',
     bairro: 'Casa Forte',
-    fornecedorAtual: null,
     melhorHorario: null,
     notasContexto: 'Endereço e telefone de fontes públicas (Tripadvisor). CEP divergente em um cadastro (52061-540). CNPJ fictício (teste). Coordenadas a informar.',
   },
@@ -196,7 +187,6 @@ const establishments = [
     endereco: 'Rua Artur Muniz, 82 - Boa Viagem, Recife - PE, 51111-190',
     telefone: '(81) 3019-4044',
     bairro: 'Boa Viagem',
-    fornecedorAtual: 'Distribuidora Teste B',
     melhorHorario: '12:30',
     notasContexto: 'Unidade da Praia (Boa Viagem). Não confundir com a unidade da Zona Norte (R. Igarassu, 104). Horário divergente entre fontes. Fornecedor e horário são fictícios (teste). CNPJ fictício (teste). Coordenadas a informar.',
   },
@@ -213,7 +203,6 @@ const establishments = [
     endereco: 'Rua General Joaquim Inácio, 515 - Ilha do Leite, Recife - PE, 50070-270',
     telefone: '(81) 3423-8157',
     bairro: 'Ilha do Leite',
-    fornecedorAtual: null,
     melhorHorario: null,
     notasContexto: 'Skillus Classic. Horário divergente entre fontes (11h30 às 22h ou 18h às 22h). CNPJ fictício (teste). Coordenadas a informar.',
   },
@@ -230,7 +219,6 @@ const establishments = [
     endereco: 'Av. Engenheiro Domingos Ferreira, 1157 - Boa Viagem, Recife - PE, 51111-020',
     telefone: null,
     bairro: 'Boa Viagem',
-    fornecedorAtual: null,
     melhorHorario: '19:00',
     notasContexto: 'Telefones divergentes entre fontes. CEP divergente (51011-051 no Restaurant Guru). Horário e fornecedor são fictícios (teste). CNPJ fictício (teste). Coordenadas a informar.',
   },
@@ -248,6 +236,14 @@ const purchases = [
   { id: 'pur-costa-1', establishmentId: 'est-costa-pizzaria', vendedorId: 'seller-1', data: '2026-09-25', valor: 180, autonoma: false },
 ];
 
+// Fornecimentos de exemplo: qual distribuidora fornece qual categoria (dados fictícios, teste).
+const fornecimentos = [
+  { establishmentId: 'est-firetha', distribuidora: 'Distribuidora Teste B', categoria: 'carne' as const },
+  { establishmentId: 'est-meu-bar', distribuidora: 'Distribuidora Teste C', categoria: 'bebidas' as const },
+  { establishmentId: 'est-costa-pizzaria', distribuidora: 'Distribuidora Teste A', categoria: 'pao' as const },
+  { establishmentId: 'est-zen-piedade', distribuidora: 'Distribuidora Teste C', categoria: 'mercearia' as const },
+];
+
 async function main() {
   for (const s of sellers) {
     await prisma.seller.upsert({ where: { id: s.id }, update: s, create: s });
@@ -262,6 +258,24 @@ async function main() {
   for (const p of purchases) {
     const data = { ...p, data: new Date(p.data) };
     await prisma.purchase.upsert({ where: { id: p.id }, update: data, create: data });
+  }
+  for (const f of fornecimentos) {
+    const distribuidora = await prisma.distribuidora.upsert({
+      where: { nome: f.distribuidora },
+      update: {},
+      create: { nome: f.distribuidora },
+    });
+    await prisma.fornecimento.upsert({
+      where: {
+        establishmentId_distribuidoraId_categoria: {
+          establishmentId: f.establishmentId,
+          distribuidoraId: distribuidora.id,
+          categoria: f.categoria,
+        },
+      },
+      update: {},
+      create: { establishmentId: f.establishmentId, distribuidoraId: distribuidora.id, categoria: f.categoria },
+    });
   }
   const count = await prisma.establishment.count();
   console.log(`Seed ok: ${sellers.length} vendedores, ${count} estabelecimentos.`);

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { Establishment, Visit, Purchase } from '@/lib/types';
 import { establishmentsAPI, visitsAPI, purchasesAPI } from '@/lib/api';
+import { FornecimentosCard } from '@/components/fornecimentos-card';
 
 export default function ClientePage() {
   const params = useParams<{ id: string }>();
@@ -94,10 +95,8 @@ export default function ClientePage() {
             <p>
               <span className="text-slate-600">Segmento:</span> {establishment.segmento}
             </p>
-            <p>
-              <span className="text-slate-600">Fornecedor atual:</span> {establishment.fornecedorAtual}
-            </p>
           </div>
+          <FornecimentosCard establishmentId={establishment.id} />
         </div>
 
         {/* Compras */}

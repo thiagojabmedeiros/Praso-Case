@@ -52,7 +52,6 @@ export class EstablishmentsService {
         endereco: data.endereco,
         telefone: data.telefone,
         bairro: data.bairro,
-        fornecedorAtual: data.fornecedorAtual,
         melhorHorario: data.melhorHorario,
         notasContexto: data.notasContexto,
         score: data.score,

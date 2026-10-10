@@ -7,6 +7,7 @@ import {
   EstablishmentStatus,
   VisitResult,
   Recomendacao,
+  Fornecimento,
 } from './types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
@@ -122,4 +123,21 @@ export const recommendationsAPI = {
     const params = origem ? `?lat=${origem.lat}&lng=${origem.lng}` : "";
     return apiCall<Recomendacao[]>(`/recommendations/vendor/${vendedorId}${params}`);
   },
+};
+
+// Fornecedores (distribuidoras por categoria)
+export const fornecimentosAPI = {
+  listar: (establishmentId: string) =>
+    apiCall<Fornecimento[]>(`/establishments/${establishmentId}/fornecimentos`),
+
+  adicionar: (establishmentId: string, distribuidora: string, categoria: string) =>
+    apiCall<Fornecimento>(`/establishments/${establishmentId}/fornecimentos`, {
+      method: 'POST',
+      body: JSON.stringify({ distribuidora, categoria }),
+    }),
+
+  remover: (id: string) =>
+    apiCall<{ removido: boolean }>(`/fornecimentos/${id}`, { method: 'DELETE' }),
+
+  distribuidoras: () => apiCall<{ id: string; nome: string }[]>('/distribuidoras'),
 };

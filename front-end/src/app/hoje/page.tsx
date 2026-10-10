@@ -145,12 +145,6 @@ export default function HojePage() {
                   </div>
                 </div>
 
-                {/* Fornecedor */}
-                <div className="mt-2 text-xs">
-                  <span className="text-slate-500">Fornecedor atual:</span>
-                  <p className="text-slate-700">{est.fornecedorAtual ?? '—'}</p>
-                </div>
-
                 {/* CTA */}
                 <div className="mt-3 flex gap-2">
                   <Link

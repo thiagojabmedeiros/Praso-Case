@@ -27,7 +27,6 @@ export interface Establishment {
   latitude?: number | null;
   longitude?: number | null;
   bairro: string;
-  fornecedorAtual: string;
   melhorHorario: string;
   notasContexto: string;
   score: number;
@@ -86,4 +85,10 @@ export interface Recomendacao {
   establishment: Establishment;
   score: number;
   motivos: string[];
+}
+
+export interface Fornecimento {
+  id: string;
+  categoria: string;
+  distribuidora: { id: string; nome: string };
 }
