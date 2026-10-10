@@ -44,6 +44,12 @@ enum Potential {
   baixo
 }
 
+enum Turno {
+  manha
+  tarde
+  noite
+}
+
 enum VisitType {
   planejada
   efetiva
@@ -93,6 +99,7 @@ model Establishment {
   bairro          String
   fornecedorAtual String?
   melhorHorario   String? // "HH:mm", quando souber
+  melhorTurno     Turno? // último turno informado pelo vendedor
   notasContexto   String               @default("")
   // Pontos de aquisição já atribuídos a este estabelecimento (MEI 0.5, Não-MEI 1, alto potencial 3)
   score           Float                @default(0)
@@ -125,6 +132,7 @@ model Visit {
   nota            String      @default("")
   // Data combinada para o próximo contato (retorno ou acompanhamento)
   proximoContato  DateTime?
+  melhorTurno     Turno?
   // Anulação com motivo (única forma de "alterar" uma visita)
   anuladaEm       DateTime?
   motivoAnulacao  String?

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { Establishment, Visit, VisitResult } from '@/lib/types';
+import { Establishment, Turno, Visit, VisitResult } from '@/lib/types';
 import { establishmentsAPI, visitsAPI } from '@/lib/api';
 
 const visitResults: { value: VisitResult; label: string; emoji: string }[] = [
@@ -25,6 +25,7 @@ export default function VisitaPage() {
   const [note, setNote] = useState('');
   const [proximoContato, setProximoContato] = useState('');
   const [valorCompra, setValorCompra] = useState('');
+  const [melhorTurno, setMelhorTurno] = useState<Turno | null>(null);
   const [compraAutonoma, setCompraAutonoma] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [useVoice, setUseVoice] = useState(false);
@@ -94,6 +95,7 @@ export default function VisitaPage() {
         resultado: selectedResult,
         nota: note,
         proximoContato: proximoContato ? new Date(`${proximoContato}T12:00:00`).toISOString() : null,
+        melhorTurno,
         compra: selectedResult === 'compra' ? { valor: Number(valorCompra), autonoma: compraAutonoma } : null,
         createdAt: new Date().toISOString(),
       };
@@ -177,6 +179,12 @@ export default function VisitaPage() {
                 {establishment.melhorHorario ?? 'a levantar em campo'}
               </span>
             </p>
+            <p>
+              <span className="text-slate-600">Melhor turno:</span>{' '}
+              <span className={establishment.melhorTurno ? 'font-medium' : 'font-medium text-slate-500'}>
+                {establishment.melhorTurno ? { manha: 'Manhã', tarde: 'Tarde', noite: 'Noite' }[establishment.melhorTurno] : 'a levantar em campo'}
+              </span>
+            </p>
             {establishment.notasContexto && (
               <p>
                 <span className="text-slate-600">Notas:</span>{' '}
@@ -231,6 +239,32 @@ export default function VisitaPage() {
         </div>
 
         {/* Nota rápida */}
+        <div className="bg-white border border-slate-200 rounded-lg p-4">
+          <h2 className="font-semibold text-slate-900 mb-3">🕒 Melhor turno para voltar</h2>
+          <div className="flex gap-2">
+            {(
+              [
+                { value: 'manha', label: 'Manhã' },
+                { value: 'tarde', label: 'Tarde' },
+                { value: 'noite', label: 'Noite' },
+              ] as { value: Turno; label: string }[]
+            ).map((turno) => (
+              <button
+                key={turno.value}
+                type="button"
+                onClick={() => setMelhorTurno(melhorTurno === turno.value ? null : turno.value)}
+                className={`flex-1 py-2 rounded text-sm transition ${
+                  melhorTurno === turno.value
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-slate-200 hover:bg-slate-300 text-slate-800'
+                }`}
+              >
+                {turno.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {selectedResult === 'compra' && (
           <div className="bg-white border border-slate-200 rounded-lg p-4">
             <h2 className="font-semibold text-slate-900 mb-3">🛒 Dados da compra</h2>

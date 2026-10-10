@@ -3,7 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { toEstablishment } from '../prisma/mappers';
 import { FollowUpsService } from '../followups/followups.service';
 import { Establishment, FollowUp } from '../types';
-import { haversineKm, pontuar } from './scoring';
+import { dataRecife, haversineKm, pontuar } from './scoring';
 
 const DIA_MS = 24 * 60 * 60 * 1000;
 
@@ -39,12 +39,17 @@ export class RecommendationsService {
 
     const visitas = await this.prisma.visit.findMany({
       where: { establishmentId: { in: ids }, anuladaEm: null },
-      select: { establishmentId: true, dataHora: true },
+      select: { establishmentId: true, dataHora: true, proximoContato: true },
       orderBy: { dataHora: 'desc' },
     });
     const ultimaVisita = new Map<string, Date>();
+    // Retorno combinado: data do próximo contato mais recente registrada numa visita válida.
+    const retornoPorEst = new Map<string, string>();
     for (const v of visitas) {
       if (!ultimaVisita.has(v.establishmentId)) ultimaVisita.set(v.establishmentId, v.dataHora);
+      if (v.proximoContato && !retornoPorEst.has(v.establishmentId)) {
+        retornoPorEst.set(v.establishmentId, dataRecife(v.proximoContato));
+      }
     }
 
     return rows
@@ -63,6 +68,8 @@ export class RecommendationsService {
             status: establishment.status,
             potencial: establishment.potencial,
             melhorHorario: establishment.melhorHorario,
+            melhorTurno: establishment.melhorTurno,
+            retornoData: retornoPorEst.get(row.id) ?? null,
             urgencia: followup?.urgencia ?? null,
             diasRestantes: followup?.diasRestantes ?? null,
             diasDesdeUltimaVisita: ultima

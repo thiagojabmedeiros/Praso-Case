@@ -36,10 +36,19 @@ export class VisitsService {
           geoAccuracy: data.geo?.accuracy ?? null,
           nota: data.nota ?? '',
           proximoContato: data.proximoContato ? new Date(data.proximoContato) : null,
+          melhorTurno: data.melhorTurno ?? null,
         },
       });
 
       let pontos = 0;
+      // O turno informado na visita vale para o estabelecimento até a próxima informação.
+      if (data.melhorTurno) {
+        await tx.establishment.update({
+          where: { id: data.establishmentId },
+          data: { melhorTurno: data.melhorTurno },
+        });
+      }
+
       const est = await tx.establishment.findUnique({ where: { id: data.establishmentId } });
       const conquistou = data.resultado === 'cadastrou' || data.resultado === 'compra';
 

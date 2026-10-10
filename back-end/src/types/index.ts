@@ -3,6 +3,7 @@ export type EstablishmentSegment = 'restaurante' | 'padaria' | 'lanchonete' | 'p
 export type DocumentType = 'MEI' | 'nao-MEI';
 export type Potential = 'alto' | 'normal' | 'baixo';
 export type VisitType = 'planejada' | 'efetiva';
+export type Turno = 'manha' | 'tarde' | 'noite';
 export type VisitResult = 'cadastrou' | 'recusou' | 'fechado' | 'ausente' | 'compra' | 'em-acompanhamento';
 
 export interface Geo {
@@ -26,6 +27,7 @@ export interface Establishment {
   bairro: string;
   fornecedorAtual: string | null;
   melhorHorario: string | null; // ex: "14:00"
+  melhorTurno: Turno | null; // último turno informado pelo vendedor
   notasContexto: string;
   score: number;
   vendedorId: string | null;
@@ -43,6 +45,7 @@ export interface Visit {
   geo?: Geo;
   nota: string;
   proximoContato?: Date | null;
+  melhorTurno?: Turno | null;
   pontosGerados?: number;
   anuladaEm?: Date | null;
   motivoAnulacao?: string | null;

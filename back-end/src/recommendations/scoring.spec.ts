@@ -1,5 +1,7 @@
 import {
   componenteDistancia,
+  componenteRetorno,
+  turnoAtual,
   componenteHorario,
   componenteRecencia,
   haversineKm,
@@ -78,6 +80,39 @@ describe('scoring', () => {
     it('explica o motivo para estabelecimentos já cadastrados', () => {
       const r = pontuar({ status: 'oportunidade', potencial: 'normal', melhorHorario: null, urgencia: null, diasRestantes: null, diasDesdeUltimaVisita: null }, AGORA_18H);
       expect(r.motivos).toContain('já cadastrado, ainda não comprou');
+    });
+  });
+
+  describe('turno e retorno', () => {
+    it('identifica o turno de Recife', () => {
+      expect(turnoAtual(new Date('2026-10-10T12:00:00Z'))).toBe('manha'); // 09h
+      expect(turnoAtual(new Date('2026-10-10T17:00:00Z'))).toBe('tarde'); // 14h
+      expect(turnoAtual(new Date('2026-10-10T21:00:00Z'))).toBe('noite'); // 18h
+    });
+
+    it('turno ideal vale 1; fora dele vale 0,2; sem informação vale 0,5', () => {
+      expect(componenteHorario(null, AGORA_18H, 'noite')).toBe(1);
+      expect(componenteHorario(null, AGORA_18H, 'manha')).toBe(0.2);
+      expect(componenteHorario(null, AGORA_18H, null)).toBe(0.5);
+    });
+
+    it('horário exato tem prioridade sobre o turno', () => {
+      expect(componenteHorario('18:00', AGORA_18H, 'manha')).toBe(1);
+    });
+
+    it('retorno de hoje ou vencido vale 1; futuro ou ausente vale 0', () => {
+      expect(componenteRetorno('2026-10-09', AGORA_18H)).toBe(1);
+      expect(componenteRetorno('2026-10-05', AGORA_18H)).toBe(1);
+      expect(componenteRetorno('2026-10-12', AGORA_18H)).toBe(0);
+      expect(componenteRetorno(null, AGORA_18H)).toBe(0);
+    });
+
+    it('retorno combinado para hoje aparece como motivo', () => {
+      const r = pontuar(
+        { status: 'oportunidade', potencial: 'normal', melhorHorario: null, urgencia: null, diasRestantes: null, diasDesdeUltimaVisita: null, retornoData: '2026-10-09' },
+        AGORA_18H,
+      );
+      expect(r.motivos).toContain('retorno combinado para hoje');
     });
   });
 
