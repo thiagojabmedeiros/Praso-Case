@@ -79,4 +79,5 @@ export interface FollowUp {
   faltam: number; // 3 - comprasAte
   diasRestantes: number;
   urgencia: 'vencida' | 'critica' | 'normal'; // calculado
+  metaBatida: boolean; // 3 compras autônomas: cliente recorrente, sai da prioridade
 }

@@ -20,7 +20,6 @@ function buildFollowUp(
   if (purchases.length === 0) return undefined;
 
   const autonomas = purchases.filter((p) => p.autonoma).length;
-  if (autonomas >= COMPRAS_PARA_RECORRENCIA) return undefined;
 
   const primeiraCompra = purchases[purchases.length - 1];
   const proximoDeadline = new Date(primeiraCompra.data);
@@ -46,9 +45,10 @@ function buildFollowUp(
     ultimaCompraData: purchases[0].data,
     proximoDeadline,
     comprasAte: autonomas,
-    faltam: COMPRAS_PARA_RECORRENCIA - autonomas,
+    faltam: Math.max(0, COMPRAS_PARA_RECORRENCIA - autonomas),
     diasRestantes,
     urgencia,
+    metaBatida: autonomas >= COMPRAS_PARA_RECORRENCIA,
   };
 }
 
@@ -84,7 +84,9 @@ export class FollowUpsService {
       .filter((f): f is FollowUp => f !== undefined);
 
     const ordemUrgencia = { vencida: 0, critica: 1, normal: 2 };
+    // Metas batidas ficam por último: não são mais prioridade.
     return followups.sort((a, b) => {
+      if (a.metaBatida !== b.metaBatida) return a.metaBatida ? 1 : -1;
       if (ordemUrgencia[a.urgencia] !== ordemUrgencia[b.urgencia]) {
         return ordemUrgencia[a.urgencia] - ordemUrgencia[b.urgencia];
       }

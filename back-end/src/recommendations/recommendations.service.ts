@@ -70,7 +70,7 @@ export class RecommendationsService {
             melhorHorario: establishment.melhorHorario,
             melhorTurno: establishment.melhorTurno,
             retornoData: retornoPorEst.get(row.id) ?? null,
-            urgencia: followup?.urgencia ?? null,
+            urgencia: followup && !followup.metaBatida ? followup.urgencia : null,
             diasRestantes: followup?.diasRestantes ?? null,
             diasDesdeUltimaVisita: ultima
               ? Math.floor((agora.getTime() - ultima.getTime()) / DIA_MS)

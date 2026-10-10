@@ -87,12 +87,12 @@ export default function CarteiraPage() {
       {/* Stats */}
       <div className="max-w-2xl mx-auto p-4 grid grid-cols-3 gap-4 mb-4">
         <div className="bg-white rounded-lg p-4 text-center border border-slate-200">
-          <p className="text-3xl font-bold text-slate-900">{followups.length}</p>
+          <p className="text-3xl font-bold text-slate-900">{followups.filter((f) => !f.metaBatida).length}</p>
           <p className="text-xs text-slate-600 mt-1">Em Acompanhamento</p>
         </div>
         <div className="bg-white rounded-lg p-4 text-center border border-slate-200">
           <p className="text-3xl font-bold text-orange-600">
-            {followups.filter((f) => f.urgencia === 'critica' || f.urgencia === 'vencida').length}
+            {followups.filter((f) => !f.metaBatida && (f.urgencia === 'critica' || f.urgencia === 'vencida')).length}
           </p>
           <p className="text-xs text-slate-600 mt-1">Urgentes</p>
         </div>
@@ -113,7 +113,11 @@ export default function CarteiraPage() {
         ) : (
           followups.map((followup) => (
             <Link key={followup.establishmentId} href={`/cliente/${followup.establishmentId}`}>
-              <div className="bg-white rounded-lg shadow hover:shadow-md transition p-4 cursor-pointer">
+              <div
+                className={`rounded-lg shadow hover:shadow-md transition p-4 cursor-pointer ${
+                  followup.metaBatida ? 'bg-emerald-50 border border-emerald-200 opacity-80' : 'bg-white'
+                }`}
+              >
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div className="flex-1 min-w-0">
                     <h2 className="font-semibold text-lg text-slate-900 truncate">
@@ -124,9 +128,11 @@ export default function CarteiraPage() {
                     </p>
                   </div>
                   <span
-                    className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap border-2 ${urgencyColor[followup.urgencia]}`}
+                    className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap border-2 ${
+                      followup.metaBatida ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : urgencyColor[followup.urgencia]
+                    }`}
                   >
-                    {urgencyLabel[followup.urgencia]}
+                    {followup.metaBatida ? '🏆 Meta batida' : urgencyLabel[followup.urgencia]}
                   </span>
                 </div>
 
@@ -137,7 +143,7 @@ export default function CarteiraPage() {
                       {followup.comprasAte}/3 compras autônomas
                     </span>
                     <span className="text-xs text-slate-600">
-                      {followup.diasRestantes} dias restantes
+                      {followup.metaBatida ? 'recorrência concluída' : `${followup.diasRestantes} dias restantes`}
                     </span>
                   </div>
                   <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
