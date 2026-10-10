@@ -147,7 +147,10 @@ export default function RecorrenciasPage() {
           </div>
 
           <ul className="space-y-3">
-            {itens.map((item, i) => {
+            {/* Já visitados hoje descem para o fim; a ordem de urgência se mantém dentro de cada grupo. */}
+            {[...itens]
+              .sort((a, b) => Number(visitadosHoje.has(a.establishmentId)) - Number(visitadosHoje.has(b.establishmentId)))
+              .map((item, i) => {
               const est = item.establishment;
               const pendenciaVencida = item.proximaPendencia ? new Date(item.proximaPendencia) < new Date() : false;
               const tomEtapas = item.metaBatida
