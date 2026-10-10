@@ -14,7 +14,7 @@ const adapter = new PrismaPg({ connectionString: process.env.DIRECT_URL! });
 const prisma = new PrismaClient({ adapter });
 
 const sellers = [
-  { id: 'seller-1', nome: 'João da Silva', pontuacaoAcumulada: 1.5 },
+  { id: 'seller-1', nome: 'Vinicius', pontuacaoAcumulada: 1.5 },
   { id: 'seller-2', nome: 'Maria dos Santos', pontuacaoAcumulada: 0.5 },
 ];
 
