@@ -24,6 +24,8 @@ export default function VisitaPage() {
   const [selectedResult, setSelectedResult] = useState<VisitResult | null>(null);
   const [note, setNote] = useState('');
   const [proximoContato, setProximoContato] = useState('');
+  const [valorCompra, setValorCompra] = useState('');
+  const [compraAutonoma, setCompraAutonoma] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [useVoice, setUseVoice] = useState(false);
   const [listeningVoice, setListeningVoice] = useState(false);
@@ -76,6 +78,11 @@ export default function VisitaPage() {
       return;
     }
 
+    if (selectedResult === 'compra' && !(Number(valorCompra) > 0)) {
+      setError('Informe o valor da compra');
+      return;
+    }
+
     try {
       setIsSubmitting(true);
       const visitData: Visit = {
@@ -87,6 +94,7 @@ export default function VisitaPage() {
         resultado: selectedResult,
         nota: note,
         proximoContato: proximoContato ? new Date(`${proximoContato}T12:00:00`).toISOString() : null,
+        compra: selectedResult === 'compra' ? { valor: Number(valorCompra), autonoma: compraAutonoma } : null,
         createdAt: new Date().toISOString(),
       };
 
@@ -223,6 +231,30 @@ export default function VisitaPage() {
         </div>
 
         {/* Nota rápida */}
+        {selectedResult === 'compra' && (
+          <div className="bg-white border border-slate-200 rounded-lg p-4">
+            <h2 className="font-semibold text-slate-900 mb-3">🛒 Dados da compra</h2>
+            <label className="block text-sm text-slate-700 mb-1">Valor (R$)</label>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              inputMode="decimal"
+              value={valorCompra}
+              onChange={(e) => setValorCompra(e.target.value)}
+              className="w-full border border-slate-300 rounded px-3 py-2 text-sm"
+            />
+            <label className="mt-3 flex items-center gap-2 text-sm text-slate-700">
+              <input
+                type="checkbox"
+                checked={compraAutonoma}
+                onChange={(e) => setCompraAutonoma(e.target.checked)}
+              />
+              Comprou sozinho, sem apoio do vendedor
+            </label>
+          </div>
+        )}
+
         {(selectedResult === 'cadastrou' || selectedResult === 'em-acompanhamento') && (
           <div className="bg-white border border-slate-200 rounded-lg p-4">
             <h2 className="font-semibold text-slate-900 mb-3">📅 Próximo contato</h2>

@@ -43,6 +43,7 @@ export interface Visit {
   geo?: Geo;
   nota: string;
   proximoContato?: string | null;
+  compra?: { valor: number; autonoma: boolean } | null;
   createdAt: string;
 }
 
