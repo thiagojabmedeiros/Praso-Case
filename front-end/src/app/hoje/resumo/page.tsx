@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Check, Copy, FileText, MapPin, PhoneCall } from 'lucide-react';
-import { establishmentsAPI, visitsAPI } from '@/lib/api';
-import { Establishment, Visit, VisitResult } from '@/lib/types';
+import { establishmentsAPI, recommendationsAPI, visitsAPI } from '@/lib/api';
+import { Establishment, Recomendacao, Visit, VisitResult } from '@/lib/types';
 import {
   Badge,
   Button,
@@ -46,7 +46,7 @@ interface Linha {
 function montarTexto(data: string, linhas: Linha[], totais: Totais): string {
   const cabecalho = [
     `Resumo do dia — ${new Date(`${data}T12:00:00`).toLocaleDateString('pt-BR')}`,
-    `Visitas: ${totais.visitas} · Estabelecimentos: ${totais.estabelecimentos} · Cadastros: ${totais.cadastros} · Compras: ${totais.compras}${totais.compras ? ` (${moeda(totais.valorCompras)})` : ''} · Acompanhar: ${totais.acompanhar}`,
+    `Já visitados: ${totais.jaVisitados} · Pendentes: ${totais.pendentes} · Cadastros: ${totais.cadastros} · Compras: ${totais.compras}${totais.compras ? ` (${moeda(totais.valorCompras)})` : ''} · Acompanhar: ${totais.acompanhar}`,
   ];
   const corpo = linhas.map(({ estabelecimento: est, visitas }, i) => {
     const acoes = visitas.map((v) => {
@@ -65,8 +65,8 @@ function montarTexto(data: string, linhas: Linha[], totais: Totais): string {
 }
 
 interface Totais {
-  visitas: number;
-  estabelecimentos: number;
+  jaVisitados: number;
+  pendentes: number;
   cadastros: number;
   compras: number;
   valorCompras: number;
@@ -76,6 +76,7 @@ interface Totais {
 export default function ResumoDoDiaPage() {
   const [visitas, setVisitas] = useState<Visit[]>([]);
   const [estabelecimentos, setEstabelecimentos] = useState<Establishment[]>([]);
+  const [recomendacoes, setRecomendacoes] = useState<Recomendacao[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
   const [copiado, setCopiado] = useState(false);
@@ -85,9 +86,14 @@ export default function ResumoDoDiaPage() {
     setData(diaDe(new Date().toISOString()));
     async function carregar() {
       try {
-        const [vis, est] = await Promise.all([visitsAPI.getAll(), establishmentsAPI.getAll()]);
+        const [vis, est, rec] = await Promise.all([
+          visitsAPI.getAll(),
+          establishmentsAPI.getAll(),
+          recommendationsAPI.getByVendedor(VENDEDOR_ID),
+        ]);
         setVisitas(vis);
         setEstabelecimentos(est);
+        setRecomendacoes(rec);
       } catch (err) {
         setErro(err instanceof Error ? err.message : 'Erro ao carregar o resumo');
       } finally {
@@ -123,15 +129,16 @@ export default function ResumoDoDiaPage() {
 
   const totais = useMemo<Totais>(() => {
     const compras = doDia.filter((v) => v.resultado === 'compra');
+    // Mesma regra das abas de Hoje: visitado hoje (pelo back-end) ou pendente.
     return {
-      visitas: doDia.length,
-      estabelecimentos: linhas.length,
+      jaVisitados: recomendacoes.filter((r) => r.visitadoHoje).length,
+      pendentes: recomendacoes.filter((r) => !r.visitadoHoje).length,
       cadastros: doDia.filter((v) => v.resultado === 'cadastrou').length,
       compras: compras.length,
       valorCompras: compras.reduce((soma, v) => soma + (v.compra?.valor ?? 0), 0),
       acompanhar: doDia.filter((v) => v.resultado === 'em-acompanhamento').length,
     };
-  }, [doDia, linhas]);
+  }, [doDia, recomendacoes]);
 
   const copiarResumo = async () => {
     try {
@@ -165,8 +172,8 @@ export default function ResumoDoDiaPage() {
       {!carregando && !erro && linhas.length > 0 && (
         <div className="space-y-4 p-4">
           <div className="grid grid-cols-2 gap-2">
-            <StatTile valor={totais.visitas} rotulo="Visitas" tom="primary" />
-            <StatTile valor={totais.estabelecimentos} rotulo="Estabelecimentos" tom="neutral" />
+            <StatTile valor={totais.jaVisitados} rotulo="Já visitados" tom="primary" />
+            <StatTile valor={totais.pendentes} rotulo="Pendentes" tom="warning" />
             <StatTile valor={totais.cadastros} rotulo="Cadastros" tom="success" />
             <StatTile valor={totais.compras ? moeda(totais.valorCompras) : '—'} rotulo={`Compras (${totais.compras})`} tom="success" />
           </div>
